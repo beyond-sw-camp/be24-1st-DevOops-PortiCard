@@ -27,14 +27,42 @@
 
 <br>
 
+## 🛠️ 기술 스택
+
+### DBMS
+
+![Ubuntu](https://img.shields.io/badge/ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=FFFFFF)
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
+
+
+### Monitoring
+
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
+
+### Version Cntrol & Collaboration
+
+![Git](https://img.shields.io/badge/git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+![Discord](https://img.shields.io/badge/Discord-5865F2.svg?style=for-the-badge&logo=discord&logoColor=white)
+
+
+<br>
+
 ## 📆 프로젝트 기획안
-[프로젝트 기획안](https://docs.google.com/document/d/1uJZFsL8RkwhV966r5V3YNvqtKCgFLajqJqTCdzTZBmg/edit?tab=t.0)
+[프로젝트 기획안](./docs/프로젝트%20기획안.pdf)
 
 <br>
 
 ## 💡요구사항 정의서
 
-[요구사항 정의서](https://docs.google.com/spreadsheets/d/19QDROSkjR6Pb0Gci8nnkqwB4oXsROOQEx7DVDcdNbCg/edit?gid=706060403#gid=706060403)
+[요구사항 정의서](./docs/요구사항%20정의서.pdf)
+
+<br>
+
+## 📝 테이블 명세서
+
+[테이블 명세서](./docs/테이블%20명세서.pdf)
 
 <br>
 
@@ -42,23 +70,75 @@
 
 <img src="images/erd1.png" />
 
-## 📌 시스템 아키텍쳐
+<br>
+
+## 📌 시스템 아키텍처
 
 <img src="images/sw-architecture.png" />
 
-<br><br>
+<br>
 
-본 서비스는 포트폴리오 생성·수정, 섹션 편집, 미디어 업로드 등 **쓰기(INSERT/UPDATE) 작업이 빈번하게 발생하는 서비스**입니다. 이러한 쓰기 작업은 사용자 입력에 대한 즉각적인 저장과 빠른 응답 속도가 중요하며, 트랜잭션 처리 지연은 사용자 경험에 직접적인 영향을 주게 됩니다.
+## 재해 복구 (DR)
 
-클러스터 구조는 여러 노드 간 합의를 통해 데이터를 저장하므로 쓰기 시점마다 동기화 비용이 발생하고, 이는 쓰기 속도의 지연으로 이어집니다.
+<details>
 
-반면 Master–Slave 레플리케이션은 **Master에 먼저 데이터를 저장한 뒤 Slave로 비동기 복제하는 방식**이기 때문에, **쓰기 요청에 대한 응답 속도를 빠르게 유지**할 수 있습니다.
+<summary> Master-Slave Replication 방식 사용 </summary> <br>
 
-따라서 본 시스템에서는 **쓰기 작업은 Master DB에서 단일 처리**하여 데이터 정합성과 빠른 저장을 보장하고,
-**읽기 작업은 Slave DB로 분산**하여 조회 부하를 줄이고 확장성을 확보하기 위해
-**Master–Slave 레플리케이션 구조**를 채택하였습니다.
+🔍 **서비스의 특성 및 핵심 요구사항**
+* 포트폴리오 생성·수정, 섹션 편집, 미디어 업로드 등 INSERT/UPDATE 작업이 서비스의 주를 이룹니다.
 
-이 구조를 통해 쓰기 성능 저하 없이 포트폴리오 작성 기능을 안정적으로 제공하면서, 다수의 사용자 조회 요청에도 유연하게 대응할 수 있습니다.
+* 사용자 입력에 대한 즉각적인 저장과 응답이 중요하며, 트랜잭션 지연은 사용자 경험에 직결됩니다.
+
+<br>
+
+🔍 **기술 비교 및 분석**
+
+* 여러 노드 간 합의 과정을 거쳐 데이터를 저장하므로 쓰기 시점마다 동기화 비용이 발생하며, 이는 쓰기 속도 지연으로 이어집니다.
+
+* Master에 데이터를 먼저 저장한 뒤 Slave로 비동기 복제하는 방식이므로 쓰기 요청에 대한 빠른 응답 속도를 유지할 수 있습니다.
+
+<br>
+
+🔍 **Master-Slave 레플리케이션 채택 이유**
+
+* 쓰기 작업은 Master DB에서 단일 처리하여 데이터 정합성을 유지하고 빠른 저장 속도를 보장합니다.
+
+* 읽기 작업(SELECT)은 Slave DB로 분산하여 시스템 전체의 조회 부하를 줄이고 확장성을 확보합니다.
+
+* 이를 통해 쓰기 성능 저하 없이 포트폴리오 작성 기능을 제공하며, 다수의 사용자 조회 요청에도 유연하게 대응합니다.
+
+</details>
+
+<br>
+
+<details>
+
+<summary> 장애 복구 시나리오 </summary> <br>
+
+🔍 **Master DB 장애 발생 시 (Write 불가 상황)**
+* Prometheus가 Master DB의 메트릭 중단 혹은 연결 실패를 감지하고 Grafana 대시보드 및 알람을 통해 장애 상황을 전파합니다.
+
+* Slave DB에 쓰기 권한 부여 후 새로운 Master로 승격하여 쓰기 서비스 가용성을 확보합니다.
+
+* Slave로 복제되지 않은 일부 데이터가 있는지 확인 후 필요시 Binary Log를 활용해 복구를 수행합니다.
+
+<br>
+
+🔍 **Slave DB 장애 발생 시 (Read 부하 가중 상황)**
+* Prometheus 알람을 통해 Slave DB의 다운타임을 즉각적으로 인지합니다.
+
+* 읽기요청을 일시적으로 Master DB가 모두 부담하도록 설정하여 조회 서비스 중단을 방지합니다.
+
+* 장애가 발생한 Slave DB를 재시작하고, Master로부터 중단된 시점 이후의 데이터를 다시 복제하여 최신화합니다.
+
+<br>
+
+🔍 **장애 예방 및 상시 관리**
+* Prometheus와 Grafana를 활용해 CPU, Memory 사용량 및 Replication Lag를 상시 감시하여 임계치 초과 시 선제적으로 대응합니다.
+
+* Master와 Slave 모두 동일한 스펙(Core 2 / Memory 4GB)으로 구성하여, 장애 시 역할 전환 후에도 성능 저하 없는 서비스를 제공합니다.
+
+</details>
 
 <br>
 
