@@ -61,18 +61,21 @@
 <br>
 
 ## 부하테스트 결과
+
+### select문
 <details>
   <summary>포트폴리오에 포함된 파일 불러오기</summary>
   
   **before**
   <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
   **after**
-  <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
+  <img src="images/포트폴리오 포함 파일 불러오기(개선).png" />
 </details>
 
 <details>
   <summary>포트폴리오 내용 불러오기</summary>
 
+  **before**
   <img src="images/포트폴리오 내용 불러오기.png" />
 </details>
 
