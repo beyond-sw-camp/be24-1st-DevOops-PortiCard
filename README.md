@@ -58,6 +58,58 @@
 
 이 구조를 통해 쓰기 성능 저하 없이 포트폴리오 작성 기능을 안정적으로 제공하면서, 다수의 사용자 조회 요청에도 유연하게 대응할 수 있습니다.
 
+
+<br>
+
+## 테스트 결과
+
+### select 문
+
+<details>
+  <summary>채팅방 목록 가져오기</summary>
+
+  <img src="images/테스트결과_채팅방 목록 조회 (room_id 고정).png" />
+</details>
+
+<details>
+  <summary>특정 채팅방 채팅 목록 가져오기</summary>
+
+  <img src="images/테스트 결과_채팅방 채팅내역 불러오기.png" />
+</details>
+
+<details>
+  <summary>알림 목록 선택</summary>
+
+  <img src="images/테스트결과_알림 방 선택.png" />
+</details>
+
+### INSERT 문
+
+<details>
+  <summary>회원가입</summary>
+
+  <img src="images/테스트 결과_회원가입png.png" />
+</details>
+
+<details>
+  <summary>포트폴리오 섹션 작성</summary>
+  
+  <img src="images/테스트결과_포트폴리오 섹션 작성.png" />
+</details>
+
+<details>
+  <summary>포트폴리오 작성</summary>
+  
+  <img src="images/테스트결과_포트폴리오작성.png" />
+</details>
+
+<details>
+  <summary>채팅방에 메시지 전송</summary>
+
+  <img src="images/테스트 결과_채팅 메시지 전송.png" />
+</details>
+
+
 <br>
 
 ## 부하테스트 결과
@@ -67,7 +119,7 @@
 <details>
   <summary>포트폴리오에 포함된 파일 불러오기</summary>
   
-  <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
+  <img src="images/포트폴리오 포함 파일 불러오기(개선).png" />
 </details>
 
 <details>
@@ -79,13 +131,19 @@
 <details>
   <summary>채팅방 목록 가져오기</summary>
 
-  <img src="images/채팅방 목록 가져오기.png" />
+  <img src="images/채팅방 목록 조회 (개선).png" />
 </details>
 
 <details>
   <summary>특정 채팅방 채팅 목록 가져오기</summary>
 
   <img src="images/특정 채팅방 채팅내역 불러오기.png" />
+</details>
+
+<details>
+  <summary>알림 목록 선택</summary>
+
+  <img src="images/알림 목록 선택 (개선).png" />
 </details>
 
 
@@ -95,6 +153,12 @@
   <summary>회원가입</summary>
 
   <img src="images/회원가입.png" />
+</details>
+
+<details>
+  <summary>포트폴리오 섹션 작성</summary>
+  
+  <img src="images/포폴 섹션작성(개선).png" />
 </details>
 
 <details>
@@ -108,6 +172,13 @@
 
   <img src="images/채팅방에 메시지 전송.png" />
 </details>
+
+<br>
+
+## 테스트 결과
+
+
+
 
 <!--
 
