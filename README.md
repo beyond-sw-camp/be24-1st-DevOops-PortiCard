@@ -62,9 +62,30 @@
 
 ## 부하테스트 결과
 <details>
-  <summary>▶ 포트폴리오에 포함된 파일 불러오기</summary>
+  <summary>포트폴리오에 포함된 파일 불러오기</summary>
 
   <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
+</details>
+
+<details>
+  <summary>포트폴리오 내용 불러오기</summary>
+
+  <img src="images/포트폴리오 내용 불러오기.png" />
+</details>
+
+<details>채팅방 목록 가져오기<summary>summaryy
+
+  <img src="images/채팅방 목록 가져오기.png" />
+</details>
+
+<details>특정 채팅방 채팅 목록 가져오기<summary>summaryy
+
+  <img src="images/특정 채팅방 채팅내역 불러오기.png" />
+</details>
+
+<details>회원가입<summary>summaryy
+
+  <img src="images/회원가입.png" />
 </details>
 
 
