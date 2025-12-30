@@ -62,20 +62,17 @@
 
 ## 부하테스트 결과
 
-### select문
+### select 문
+
 <details>
   <summary>포트폴리오에 포함된 파일 불러오기</summary>
   
-  **before**
   <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
-  **after**
-  <img src="images/포트폴리오 포함 파일 불러오기(개선).png" />
 </details>
 
 <details>
   <summary>포트폴리오 내용 불러오기</summary>
 
-  **before**
   <img src="images/포트폴리오 내용 불러오기.png" />
 </details>
 
@@ -91,12 +88,26 @@
   <img src="images/특정 채팅방 채팅내역 불러오기.png" />
 </details>
 
+
+### INSERT 문
+
 <details>
   <summary>회원가입</summary>
 
   <img src="images/회원가입.png" />
 </details>
 
+<details>
+  <summary>포트폴리오 작성</summary>
+  
+  <img src="images/포폴 작성(개선).png" />
+</details>
+
+<details>
+  <summary>채팅방에 메시지 전송</summary>
+
+  <img src="images/채팅방에 메시지 전송.png" />
+</details>
 
 <!--
 
