@@ -27,22 +27,22 @@
 
 <br>
 
-## 프로젝트 기획안
+## 📆 프로젝트 기획안
 [프로젝트 기획안](https://docs.google.com/document/d/1uJZFsL8RkwhV966r5V3YNvqtKCgFLajqJqTCdzTZBmg/edit?tab=t.0)
 
 <br>
 
-## 요구사항 정의서
+## 💡요구사항 정의서
 
 [요구사항 정의서](https://docs.google.com/spreadsheets/d/19QDROSkjR6Pb0Gci8nnkqwB4oXsROOQEx7DVDcdNbCg/edit?gid=706060403#gid=706060403)
 
 <br>
 
-## ERD
+## 📊 ERD
 
-<img src="images/erd.png" />
+<img src="images/erd1.png" />
 
-## 시스템 아키텍쳐
+## 📌 시스템 아키텍쳐
 
 <img src="images/sw-architecture.png" />
 
@@ -62,7 +62,7 @@
 
 <br>
 
-## 부하테스트 결과
+## 🧾 부하테스트 결과
 
 ### select 문
 
