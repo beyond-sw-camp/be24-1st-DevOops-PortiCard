@@ -7,10 +7,12 @@
 <br />
 
 ## 👥 팀원 소개
+
 <div align="center">
 
-🍀 **오은서** | 🍀 **이성재** | 🍀**전성훈** | 🍀 **최승우**                            
-
+| <img src="https://avatars.githubusercontent.com/u/247562653?s=64&v=4" width="100" height="100"/> | <img src="https://avatars.githubusercontent.com/u/245795542?s=64&v=4" width="100" height="100"/> | <img src="https://avatars.githubusercontent.com/u/153381713?s=64&v=4" width="100" height="100"/> | <img src="https://avatars.githubusercontent.com/u/140137784?s=64&v=4" width="100" height="100"/> |
+| :----------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------: |
+|                              🍀 **오은서**<br/>[@katie130300-netizen](https://github.com/katie130300-netizen)                              |                  🍀 **이성재**<br/>[@Tahcy-99](https://github.com/Tahcy-99)                 |                    🍀 **전성훈**<br/>[@1jshun](https://github.com/1jshun)                   |                               🍀 **최승우**<br/>[@sw-oo](https://github.com/sw-oo)                               |                        
 </div>
 
 <br>
@@ -42,73 +44,21 @@
 
 ## 시스템 아키텍쳐
 
-<img src="images/DB_Architecture.png" />
+<img src="images/sw-architecture.png" />
 
+<br><br>
 
-본 서비스는 포트폴리오 생성·수정, 섹션 편집, 미디어 업로드 등 **쓰기(INSERT/UPDATE) 작업**이 빈번하게 발생하는 서비스입니다. 이러한 쓰기 작업은 사용자 입력에 대한 즉각적인 저장과 빠른 응답 속도가 중요하며, 트랜잭션 처리 지연은 사용자 경험에 직접적인 영향을 주게 됩니다.
+본 서비스는 포트폴리오 생성·수정, 섹션 편집, 미디어 업로드 등 **쓰기(INSERT/UPDATE) 작업이 빈번하게 발생하는 서비스**입니다. 이러한 쓰기 작업은 사용자 입력에 대한 즉각적인 저장과 빠른 응답 속도가 중요하며, 트랜잭션 처리 지연은 사용자 경험에 직접적인 영향을 주게 됩니다.
 
-클러스터 구조는 여러 노드 간 합의를 통해 데이터를 저장하므로 쓰기 시점마다 동기화 비용이 발생하고, 이는 쓰기 속도의 지연으로 이어집니다. 
-반면 Master–Slave 레플리케이션은 Master에 먼저 데이터를 저장한 뒤 Slave로 비동기 복제하는 방식이기 때문에, 쓰기 요청에 대한 응답 속도를 빠르게 유지할 수 있습니다.
+클러스터 구조는 여러 노드 간 합의를 통해 데이터를 저장하므로 쓰기 시점마다 동기화 비용이 발생하고, 이는 쓰기 속도의 지연으로 이어집니다.
 
-따라서 본 시스템에서는
+반면 Master–Slave 레플리케이션은 **Master에 먼저 데이터를 저장한 뒤 Slave로 비동기 복제하는 방식**이기 때문에, **쓰기 요청에 대한 응답 속도를 빠르게 유지**할 수 있습니다.
 
-쓰기 작업은 Master DB에서 단일 처리하여 데이터 정합성과 빠른 저장을 보장하고,
-읽기 작업은 Slave DB로 분산하여 조회 부하를 줄이고 확장성을 확보하기 위해
+따라서 본 시스템에서는 **쓰기 작업은 Master DB에서 단일 처리**하여 데이터 정합성과 빠른 저장을 보장하고,
+**읽기 작업은 Slave DB로 분산**하여 조회 부하를 줄이고 확장성을 확보하기 위해
 **Master–Slave 레플리케이션 구조**를 채택하였습니다.
 
 이 구조를 통해 쓰기 성능 저하 없이 포트폴리오 작성 기능을 안정적으로 제공하면서, 다수의 사용자 조회 요청에도 유연하게 대응할 수 있습니다.
-
-
-<br>
-
-## 테스트 결과
-
-### select 문
-
-<details>
-  <summary>채팅방 목록 가져오기</summary>
-
-  <img src="images/테스트결과_채팅방 목록 조회 (room_id 고정).png" />
-</details>
-
-<details>
-  <summary>특정 채팅방 채팅 목록 가져오기</summary>
-
-  <img src="images/테스트 결과_채팅방 채팅내역 불러오기.png" />
-</details>
-
-<details>
-  <summary>알림 목록 선택</summary>
-
-  <img src="images/테스트결과_알림 방 선택.png" />
-</details>
-
-### INSERT 문
-
-<details>
-  <summary>회원가입</summary>
-
-  <img src="images/테스트 결과_회원가입png.png" />
-</details>
-
-<details>
-  <summary>포트폴리오 섹션 작성</summary>
-  
-  <img src="images/테스트결과_포트폴리오 섹션 작성.png" />
-</details>
-
-<details>
-  <summary>포트폴리오 작성</summary>
-  
-  <img src="images/테스트결과_포트폴리오작성.png" />
-</details>
-
-<details>
-  <summary>채팅방에 메시지 전송</summary>
-
-  <img src="images/테스트 결과_채팅 메시지 전송.png" />
-</details>
-
 
 <br>
 
@@ -119,7 +69,7 @@
 <details>
   <summary>포트폴리오에 포함된 파일 불러오기</summary>
   
-  <img src="images/포트폴리오 포함 파일 불러오기(개선).png" />
+  <img src="images/포트폴리오에 포함된 파일 불러오기.png" />
 </details>
 
 <details>
@@ -131,19 +81,13 @@
 <details>
   <summary>채팅방 목록 가져오기</summary>
 
-  <img src="images/채팅방 목록 조회 (개선).png" />
+  <img src="images/채팅방 목록 가져오기.png" />
 </details>
 
 <details>
   <summary>특정 채팅방 채팅 목록 가져오기</summary>
 
   <img src="images/특정 채팅방 채팅내역 불러오기.png" />
-</details>
-
-<details>
-  <summary>알림 목록 선택</summary>
-
-  <img src="images/알림 목록 선택 (개선).png" />
 </details>
 
 
@@ -153,12 +97,6 @@
   <summary>회원가입</summary>
 
   <img src="images/회원가입.png" />
-</details>
-
-<details>
-  <summary>포트폴리오 섹션 작성</summary>
-  
-  <img src="images/포폴 섹션작성(개선).png" />
 </details>
 
 <details>
