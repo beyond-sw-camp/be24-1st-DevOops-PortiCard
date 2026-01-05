@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poticard - 화상 채팅 프리미엄</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #000000; --card: #121214; --text: #fafafa;
+      --accent: #facc15; --danger: #ef4444; --border: rgba(255,255,255,0.08);
+    }
+    body { background: var(--bg); color: var(--text); overflow: hidden; font-family: 'Noto Sans KR', sans-serif; margin: 0; }
+    
+    /* 1. 배경 비디오 (검정 배경 고정) */
+    #remoteVideo { 
+      width: 100vw; height: 100vh; object-fit: cover; 
+      position: fixed; top:0; left:0; z-index: 1; 
+      background-color: #000000; /* 파란색 출력 방지 */
+    }
+    
+    /* 2. 화면 공유 미리보기 */
+    #sharePreviewContainer {
+      position: fixed; top: 24px; right: 24px; width: 200px; aspect-ratio: 16/9;
+      border-radius: 12px; border: 2px solid var(--accent); background: #000;
+      z-index: 200; display: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      cursor: pointer; transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+    /* 화면공유 풀사이즈 */
+    #sharePreviewContainer.full-size {
+        width: calc(100vw - 48px);
+        height: calc(100vh - 120px);
+        top: 24px;
+        right: 24px;
+        z-index: 250;
+    }
+    #sharePreviewVideo { width: 100%; height: 100%; object-fit: cover; }
+
+    /* 3. 내 화면 (우하단 고정) */
+    .local-video-container {
+      position: fixed; bottom: 20px; right: 24px;
+      width: 240px; z-index: 100; transition: width 0.3s ease;
+    }
+    .local-video-container.enlarged { width: 440px; }
+    .local-video { 
+      width: 100%; aspect-ratio: 16/9; border-radius: 16px; 
+      border: 2px solid var(--accent); object-fit: cover; background: #000; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+
+    /* 하단 컨트롤 및 사이드 패널 (기존 스타일 유지) */
+    .side-panel { position: fixed; top: 0; left: 24px; width: 320px; background: rgba(18, 18, 20, 0.9); backdrop-blur: 20px; border-radius: 0 0 20px 20px; border: 1px solid var(--border); border-top: none; transition: transform 0.4s ease; z-index: 50; }
+    .side-panel.collapsed { transform: translateY(-100%); }
+    .toggle-trigger { position: absolute; bottom: -32px; left: 50%; transform: translateX(-50%); width: 54px; height: 32px; background: rgba(18, 18, 20, 0.9); border: 1px solid var(--border); border-top: none; border-radius: 0 0 12px 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--accent); }
+    .controls { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: rgba(10, 10, 10, 0.8); backdrop-blur: 20px; padding: 14px 24px; border-radius: 28px; border: 1px solid var(--border); display: flex; align-items: center; gap: 14px; z-index: 150; }
+    .control-btn { width: 56px; height: 56px; border-radius: 16px; background: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #71717a; border: 1px solid var(--border); }
+    .control-btn.on { background: var(--accent); color: #000; border: none; }
+    .status-label { font-size: 9px; font-weight: 800; }
+
+    /* 모달 공통 */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 300; padding: 20px; }
+    .modal.open { display: flex; }
+    .perspective-1000 { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s ease; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+    .flipped { transform: rotateY(180deg); }
+    
+    /* 권한 부여 스크롤 UI 개선 */
+    .portfolio-scroll { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: var(--accent) transparent;}
+    .portfolio-scroll::-webkit-scrollbar { height: 6px; }
+    .portfolio-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .portfolio-scroll::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 10px; }
+    .portfolio-item { flex: 0 0 320px; background: #1c1c1f; border-radius: 24px; border: 3px solid transparent; padding: 28px; cursor: pointer; }
+    .portfolio-item.selected { border-color: var(--accent); background: rgba(250,204,21,0.05); }
+  </style>
+</head>
+<body>
+
+  <video id="remoteVideo" autoplay playsinline></video>
+  
+  <div id="sharePreviewContainer" onclick="toggleShareSize()">
+    <video id="sharePreviewVideo" autoplay playsinline muted></video>
+  </div>
+
+  <div class="local-video-container" id="localContainer">
+    <video class="local-video" id="localVideo" autoplay muted playsinline></video>
+    <button onclick="toggleEnlarge()" class="absolute top-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-md rounded-xl text-white"><i class="fa-solid fa-maximize"></i></button>
+  </div>
+
+  <aside class="side-panel" id="sidePanel">
+    <div class="p-6">
+      <div class="flex items-center gap-4 mb-6 text-left">
+        <div class="w-12 h-12 bg-zinc-800 rounded-2xl overflow-hidden"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"></div>
+        <div><h2 class="font-black text-lg">Kim Poti</h2><p class="text-[10px] text-yellow-400 font-bold uppercase">Live Session</p></div>
+      </div>
+      <div class="grid grid-cols-1 gap-2">
+        <button onclick="openModal('cardModal')" class="w-full py-3 bg-white/5 rounded-xl text-sm font-bold border border-white/10">명함 상세보기</button>
+        <button onclick="openModal('authModal')" class="w-full py-3 bg-yellow-400 text-black rounded-xl text-sm font-black">권한 관리</button>
+      </div>
+    </div>
+    <button class="toggle-trigger" onclick="toggleSidePanel()"><i id="toggleIcon" class="fa-solid fa-chevron-up"></i></button>
+  </aside>
+
+  <nav class="controls">
+    <button id="micBtn" class="control-btn on" onclick="toggleStatus('mic')"><i class="fa-solid fa-microphone"></i><span class="status-label">ON</span></button>
+    <button id="camBtn" class="control-btn on" onclick="toggleStatus('cam')"><i class="fa-solid fa-video"></i><span class="status-label">ON</span></button>
+    <button id="shareBtn" class="control-btn" onclick="handleShareClick()"><i class="fa-solid fa-desktop"></i><span class="status-label">SHARE</span></button>
+    <button id="setBtn" class="control-btn" onclick="openModal('settingsModal')"><i class="fa-solid fa-gear"></i><span class="status-label">SETTING</span></button>
+    <div class="w-px h-10 bg-white/10 mx-1"></div>
+    <button class="control-btn" style="background:#ef4444; color:white; border:none;" onclick="location.href='index.html'"><i class="fa-solid fa-phone-slash"></i><span class="status-label">EXIT</span></button>
+  </nav>
+
+  <div id="settingsModal" class="modal" onclick="if(event.target===this) closeModal('settingsModal')">
+    <div class="bg-zinc-900 border border-white/10 rounded-[32px] p-8 w-full max-w-md">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-black flex items-center gap-2"><i class="fa-solid fa-gear text-yellow-400"></i> 환경설정</h3>
+        <button onclick="closeModal('settingsModal')" class="text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="space-y-4 text-left">
+        <div><label class="text-[10px] font-bold text-zinc-500 mb-2 block uppercase">Camera Source</label><select class="w-full bg-zinc-800 p-3 rounded-xl text-sm border-none"><option>FaceTime HD Camera</option></select></div>
+        <div><label class="text-[10px] font-bold text-zinc-500 mb-2 block uppercase">Audio Source</label><select class="w-full bg-zinc-800 p-3 rounded-xl text-sm border-none"><option>Internal Microphone</option></select></div>
+      </div>
+      <button onclick="closeModal('settingsModal')" class="w-full mt-8 py-4 bg-yellow-400 text-black rounded-2xl font-black">설정 저장</button>
+    </div>
+  </div>
+
+  <div id="shareModal" class="modal" onclick="if(event.target===this) closeModal('shareModal')">
+    <div class="bg-zinc-900 border border-white/10 rounded-[32px] p-8 w-full max-w-md text-center relative">
+      <button onclick="closeModal('shareModal')" class="absolute top-6 right-6 text-zinc-500 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <div class="w-16 h-16 bg-yellow-400/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-yellow-400 text-2xl"><i class="fa-solid fa-desktop"></i></div>
+      <h3 class="text-xl font-black mb-2">화면 공유 시작</h3>
+      <p class="text-sm text-zinc-500 mb-8 leading-relaxed">공유할 브라우저 탭이나 프레젠테이션<br>파일을 선택해 주세요.</p>
+      <button onclick="startScreenShare()" class="w-full py-4 bg-yellow-400 text-black rounded-2xl font-black">공유 할 탭 선택하기</button>
+    </div>
+  </div>
+
+  <div id="cardModal" class="modal" onclick="if(event.target===this) closeModal('cardModal')">
+    <div class="relative w-full max-w-md aspect-[1.58/1] perspective-1000">
+      <div id="card-inner" class="relative w-full h-full transform-style-3d shadow-2xl rounded-2xl cursor-pointer" onclick="flipCard()">
+        <div class="absolute inset-0 w-full h-full bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-8 backface-hidden overflow-hidden">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-bl-full"></div>
+          <div class="flex flex-col justify-between h-full relative z-10 text-left text-gray-900 dark:text-white">
+            <div class="flex justify-between items-start">
+              <div><p class="text-xs font-bold text-yellow-500 uppercase mb-1">UX/UI Designer</p><h2 class="text-3xl font-black mb-2">Kim Poti</h2><p class="text-sm opacity-60">사용자 경험을 디자인하는<br>디자이너 김포티입니다.</p></div>
+              <div class="w-20 h-20 rounded-full border-4 border-white dark:border-zinc-800 overflow-hidden"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full"></div>
+            </div>
+            <div class="pt-4 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center"><div class="flex gap-2"><span class="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold rounded">#Figma</span></div><i class="fa-solid fa-qrcode text-3xl opacity-80"></i></div>
+          </div>
+        </div>
+        <div class="absolute inset-0 w-full h-full bg-zinc-900 dark:bg-white rounded-2xl border border-zinc-800 dark:border-gray-200 p-8 backface-hidden rotate-y-180 text-white dark:text-gray-900">
+          <div class="flex flex-col h-full relative z-10 text-left">
+            <h3 class="text-lg font-bold mb-6 flex items-center gap-2"><span class="w-1.5 h-6 bg-yellow-400 rounded-full"></span> Contact Info</h3>
+            <div class="space-y-4 flex-1 text-sm"><div class="flex items-center gap-3"><i class="fa-solid fa-phone text-yellow-500"></i><span>010-1234-5678</span></div><div class="flex items-center gap-3"><i class="fa-solid fa-link text-yellow-500"></i><span>kimpoti.design</span></div></div>
+            <div class="text-right opacity-40 text-[10px] font-bold uppercase">Poticard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="authModal" class="modal" onclick="if(event.target===this) closeModal('authModal')">
+    <div class="bg-zinc-900 border border-white/10 rounded-[40px] p-10 w-full max-w-5xl shadow-3xl">
+      <div class="flex justify-between items-end mb-8 text-left">
+        <div><h3 class="text-3xl font-black mb-2">포트폴리오 권한 관리</h3><p id="selectionCount" class="text-yellow-400 text-sm font-bold">0개의 프로젝트가 선택되었습니다.</p></div>
+      </div>
+      <div class="portfolio-scroll thin-scroll" id="portfolioList" onwheel="this.scrollLeft += event.deltaY"></div>
+      <div class="flex gap-4 mt-10">
+        <button onclick="closeModal('authModal')" class="flex-1 py-5 bg-zinc-800 rounded-2xl font-bold text-zinc-400">취소</button>
+        <button onclick="confirmAuth()" class="flex-1 py-5 bg-yellow-400 text-black rounded-2xl font-black">권한 부여하기</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let localStream = null;
+    let screenStream = null;
+
+    /* 1. 캠 토글 시 실제 화면 끄기/켜기 */
+    function toggleStatus(type) {
+      const btn = document.getElementById(type==='mic'?'micBtn':'camBtn');
+      const isOn = btn.classList.toggle('on');
+      btn.querySelector('.status-label').innerText = isOn ? 'ON' : 'OFF';
+      btn.querySelector('i').className = type==='mic' ? (isOn?'fa-solid fa-microphone':'fa-solid fa-microphone-slash') : (isOn?'fa-solid fa-video':'fa-solid fa-video-slash');
+      
+      if (localStream) {
+        if (type === 'mic') {
+          localStream.getAudioTracks()[0].enabled = isOn;
+        } else {
+          localStream.getVideoTracks()[0].enabled = isOn;
+          // 캠을 끄면 비디오 엘리먼트 자체를 검은색으로 처리하기 위해 srcObject 제어 가능
+          // 여기서는 트랙 비활성화를 사용 (실제 화상 서비스 방식)
+        }
+      }
+    }
+
+    /* 2. 화면 공유 */
+    function handleShareClick() {
+      if (screenStream) stopScreenShare(); 
+      else openModal('shareModal');
+    }
+
+    /* 화면 공유 미리보기 크기 토글 기능 */
+    function toggleShareSize() {
+      const container = document.getElementById('sharePreviewContainer');
+      if (container.style.display !== 'none') {
+        container.classList.toggle('full-size');
+      }
+    }
+
+    async function startScreenShare() {
+      try {
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        const previewVideo = document.getElementById('sharePreviewVideo');
+        const previewContainer = document.getElementById('sharePreviewContainer');
+        previewVideo.srcObject = screenStream;
+        previewContainer.style.display = 'block';
+        document.getElementById('shareBtn').classList.add('on');
+        closeModal('shareModal');
+        screenStream.getVideoTracks()[0].onended = () => stopScreenShare();
+      } catch (err) { console.error(err); }
+    }
+
+    function stopScreenShare() {
+      if (screenStream) { screenStream.getTracks().forEach(track => track.stop()); screenStream = null; }
+      document.getElementById('sharePreviewContainer').style.display = 'none';
+      document.getElementById('shareBtn').classList.remove('on');
+    }
+
+    /* 3. 모달 제어 (환경설정 포함) */
+    function openModal(id) { 
+      document.getElementById(id).classList.add('open'); 
+      if(id==='authModal') renderPortfolios(); 
+    }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+    /* 4. 포트폴리오 렌더링 */
+    const portfolios = [
+      { id: 1, title: "Fintech App 2.0", desc: "사용자 100만 명을 위한 결제 모듈 최적화 및 접근성 개선 프로젝트입니다.", tags: ["Mobile", "Fintech"] },
+      { id: 2, title: "Design System", desc: "아토믹 디자인 기반의 전사 시스템 구축입니다. 50개 이상의 컴포넌트 표준화.", tags: ["Figma", "Atomic"] },
+      { id: 3, title: "Poticard Service", desc: "개인 브랜딩과 명함 공유를 결합한 새로운 소셜 플랫폼입니다.", tags: ["Web", "React"] }
+    ];
+    let selectedIds = new Set();
+    function renderPortfolios() {
+      document.getElementById('portfolioList').innerHTML = portfolios.map(p => `
+        <div class="portfolio-item text-left ${selectedIds.has(p.id) ? 'selected' : ''}" onclick="togglePortfolio(${p.id})">
+          <h4 class="font-black text-xl mb-3">${p.title}</h4>
+          <p class="text-[13px] text-zinc-400 leading-relaxed h-20 overflow-hidden">${p.desc}</p>
+          <div class="flex gap-2 mt-4">${p.tags.map(t => `<span class="px-2 py-1 bg-black/40 text-[10px] font-bold rounded">#${t}</span>`).join('')}</div>
+        </div>`).join('');
+      document.getElementById('selectionCount').innerText = `${selectedIds.size}개의 프로젝트가 선택되었습니다.`;
+    }
+    function togglePortfolio(id) { selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id); renderPortfolios(); }
+
+    /* 5. 기타 기능 */
+    function toggleSidePanel() { 
+      const p = document.getElementById('sidePanel'); p.classList.toggle('collapsed');
+      document.getElementById('toggleIcon').className = p.classList.contains('collapsed') ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up';
+    }
+    function flipCard() { document.getElementById('card-inner').classList.toggle('flipped'); }
+    function toggleEnlarge() { document.getElementById('localContainer').classList.toggle('enlarged'); }
+    function confirmAuth() { alert("부여되었습니다."); closeModal('authModal'); }
+
+    // 비디오 시작
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(s => { 
+      localStream = s;
+      document.getElementById('localVideo').srcObject = s; 
+    }).catch(e => console.log("Cam Access Error"));
+  </script>
+</body>
+</html>

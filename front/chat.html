@@ -140,9 +140,9 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button class="btn" type="button" onclick="toggleTheme()">
-          <i class="fa-solid fa-circle-half-stroke"></i>
-          <span class="hidden sm:inline ml-2">테마</span>
+        <button id="btnNewVideoChat" class="btn-accent">
+          <i class="fa-solid fa-video"></i>
+          <span class="hidden sm:inline ml-2">새 화상 채팅</span>
         </button>
         <button id="btnNewChat" class="btn-accent">
           <i class="fa-solid fa-pen-to-square"></i>
@@ -186,6 +186,11 @@
               </div>
 
               <div class="flex items-center gap-2">
+                <button id="btnVideoCall" class="btn" title="화상 채팅 시작">
+                  <i class="fa-solid fa-video"></i>
+                  <span class="hidden sm:inline ml-2">화상 채팅</span>
+                </button>
+                </button>
                 <button id="btnViewCard" class="btn">
                   <i class="fa-regular fa-id-card"></i>
                   <span class="hidden sm:inline ml-2">명함</span>
@@ -439,8 +444,27 @@
       }
     });
 
+    $("#btnNewVideoChat").addEventListener("click", () => {
+      alert("얘도 다음에 연결하기");
+    });
+
     $("#btnNewChat").addEventListener("click", () => {
       alert("새 채팅 시작(검색/유저 선택) UI는 다음 단계에서 연결하면 됨!");
+    });
+
+    $("#btnVideoCall").addEventListener("click", () => {
+    if (!activeRoomId) return alert("대상을 선택해주세요.");
+    
+    // 1. 현재 선택된 채팅방 정보 가져오기
+    const room = rooms.find(r => r.id === activeRoomId);
+    
+    // 2. 유저 이름과 ID를 쿼리 스트링으로 구성
+    // encodeURIComponent는 이름에 특수문자나 공백이 있을 경우를 대비해 안전하게 변환해줍니다.
+    const userName = encodeURIComponent(room.name);
+    const url = `./video-chat.html?id=${room.id}&name=${userName}`;
+    
+    // 3. 페이지 이동
+    window.location.href = url;
     });
 
     $("#btnViewCard").addEventListener("click", () => {
