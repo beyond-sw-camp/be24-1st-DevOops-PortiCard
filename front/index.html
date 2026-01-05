@@ -1,15 +1,25 @@
 <!DOCTYPE html>
-<html lang="ko" class="">
+<html lang="ko" class="light">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/css/header.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>poticard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/header.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <script>
-    // ✅ 2. Tailwind 설정에 폰트 패밀리 추가
-    tailwind.config = { 
+      tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
+          boxShadow: { soft: '0 12px 32px rgba(0,0,0,.08)' },
           fontFamily: {
             sans: ['Noto Sans KR', 'sans-serif'],
             poppins: ['Poppins', 'sans-serif'],
@@ -370,169 +380,7 @@
 
 <body class="bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
   <!-- HEADER -->
-  <header class="sticky top-0 z-50 border-b border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-8 py-4 flex items-center gap-6">
-      <!-- 1) LEFT: 로고 + 네비 -->
-      <div class="flex items-center gap-6 shrink-0">
-        <a href="index.html" class="flex items-center">
-          <h1 class="text-2xl font-black text-point-yellow tracking-tighter hover:opacity-90 transition">
-            Poticard
-          </h1>
-        </a>
-
-        <!-- 네비 -->
-        <nav id="mainNav" class="hidden lg:flex items-center gap-8 text-gray-400 font-medium">
-          <!-- 명함 -->
-          <div id="flyout-namecard" class="nav-item">
-            <div class="nav-title flex items-center gap-2">
-              <button
-                id="menuBtn"
-                type="button"
-                aria-controls="mainNav"
-                aria-expanded="false"
-                class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:ring-2 ring-point-yellow transition-all select-none"
-                title="전체 메뉴"
-              >
-                <span class="text-lg leading-none">📋</span>
-              </button>
-
-              <a href="#namecard" class="hover:text-gray-600 dark:hover:text-gray-300">
-                명함
-              </a>
-            </div>
-
-            <div class="nav-panel">
-              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
-                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">명함</p>
-                <div class="grid grid-cols-1 gap-2">
-                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">내 명함 보기</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">내 프로필 기반 명함 확인</p>
-                  </a>
-                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">명함 탐색</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">키워드로 명함 찾기</p>
-                  </a>
-                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">오늘의 인기 명함</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">추천/트렌딩 카드 모아보기</p>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 포트폴리오 -->
-          <div id="flyout-portfolio" class="nav-item">
-            <div class="nav-title">
-              <a href="#portfolio" class="hover:text-gray-600 dark:hover:text-gray-300">포트폴리오</a>
-            </div>
-            <div class="nav-panel">
-              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
-                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">포트폴리오</p>
-                <div class="grid grid-cols-1 gap-2">
-                  <a href="#portfolio" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">내 포트폴리오</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">작성한 포트폴리오 모아보기</p>
-                  </a>
-                  <a href="#portfolio" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">포트폴리오 검색</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">기술 스택/키워드로 검색</p>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 채용공고 -->
-          <div id="flyout-jobs" class="nav-item">
-            <div class="nav-title">
-              <a href="#jobs" class="hover:text-gray-600 dark:hover:text-gray-300">채용공고</a>
-            </div>
-            <div class="nav-panel">
-              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
-                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">채용공고</p>
-                <div class="grid grid-cols-1 gap-2">
-                  <a href="#jobs" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">맞춤 추천 공고</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">내 키워드 기반 추천</p>
-                  </a>
-                  <a href="#jobs" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">마감 임박 공고</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">D-day 기준 정렬</p>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 커뮤니티 -->
-          <div id="flyout-community" class="nav-item">
-            <div class="nav-title">
-              <a href="#chat" class="hover:text-gray-600 dark:hover:text-gray-300">커뮤니티</a>
-            </div>
-            <div class="nav-panel">
-              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
-                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">커뮤니티</p>
-                <div class="grid grid-cols-1 gap-2">
-                  <a href="#chat" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">자유 게시판</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">후기/잡담/공유</p>
-                  </a>
-                  <a href="#chat" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
-                    <p class="text-sm font-bold text-gray-900 dark:text-white">질문 & 답변</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">기술/포트폴리오 피드백</p>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </div>
-
-      <!-- 2) CENTER: 검색 -->
-      <div class="hidden md:flex flex-1 justify-center min-w-0">
-        <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 w-full max-w-[520px]">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input class="bg-transparent outline-none text-sm w-full placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                 placeholder="어떤 명함/기술 키워드를 찾고 있나요?" />
-        </div>
-      </div>
-
-      <!-- 3) RIGHT: 로그인/회원가입 + 아이콘 -->
-      <div class="flex items-center gap-3 shrink-0">
-        <div class="flex items-center gap-2 pr-2 border-r border-gray-100 dark:border-zinc-800">
-          <a id="authBtn" href="javascript:void(0)" class="text-sm font-bold text-gray-900 dark:text-white px-3 py-2 rounded-full border border-gray-200 dark:border-zinc-700 hover:border-point-yellow transition">
-            로그인/회원가입
-          </a>
-        </div>
-
-        <button onclick="toggleTheme()" class="p-2 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:ring-2 ring-point-yellow transition-all">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-          </svg>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-          </svg>
-        </button>
-
-        <button class="hidden sm:inline-flex p-2 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 22 22" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        </button>
-
-        <button class="hidden sm:inline-flex p-2 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-full relative">
-          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-point-yellow rounded-full"></span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 21 21" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </header>
+  <div id="app-header"></div>
 
   <!-- ✅ 카드 hover 미리보기(가로/간단+상세) -->
   <div id="cardPreview" class="card-preview" aria-hidden="true">
@@ -1320,5 +1168,6 @@
 
     })();
   </script>
+  <script src="assets/js/header.js"></script>
 </body>
 </html>
