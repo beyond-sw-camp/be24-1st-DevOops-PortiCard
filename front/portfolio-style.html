@@ -53,7 +53,7 @@
   </style>
 </head>
 
-<body class="min-h-screen bg-white text-zinc-900">
+<body class="min-h-screen bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
   <!-- Top bar -->
   <div id="app-header"></div>
   <div id="authModal" class="modal-backdrop" aria-hidden="true">
@@ -97,7 +97,7 @@
       <div class="grid grid-cols-12 gap-6">
         <!-- Left panel -->
         <section class="col-span-12 lg:col-span-4">
-          <div class="bg-white rounded-2xl shadow-soft border border-zinc-100 p-5">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-soft border border-zinc-100 dark:border-zinc-800 p-5">
             <div class="flex items-center gap-2 mb-4">
               <span class="text-lg">✏️</span>
               <h2 class="font-bold">스타일 커스터마이징</h2>
@@ -163,8 +163,18 @@
             <!-- Section Order / Visibility -->
             <div>
               <div class="flex items-center justify-between mb-2">
-                <div class="text-xs text-zinc-500 font-semibold">SECTIONS (드래그로 순서 변경)</div>
-                <button id="resetSections" class="text-xs px-2 py-1 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50">
+                <div class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">
+                  SECTIONS (드래그로 순서 변경)
+                </div>
+
+                <button
+                  id="resetSections"
+                  class="text-xs px-2 py-1 rounded-lg
+                        border border-zinc-200 dark:border-zinc-700
+                        bg-white dark:bg-zinc-900
+                        hover:bg-zinc-50 dark:hover:bg-zinc-800
+                        text-zinc-700 dark:text-zinc-200
+                        transition-colors">
                   초기화
                 </button>
               </div>
@@ -179,21 +189,22 @@
 
         <!-- Right panel: Live Preview -->
         <section class="col-span-12 lg:col-span-8">
-          <div class="bg-white rounded-2xl shadow-soft border border-zinc-100 p-5">
+          <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-soft border border-zinc-100 dark:border-zinc-800 p-5">
             <div class="flex items-center justify-between mb-4">
               <h2 class="font-bold">Live Preview</h2>
               <!-- (삭제) Portfolio 검은 탭 -->
             </div>
 
             <!-- Preview Canvas -->
-            <div class="rounded-2xl border border-zinc-100 bg-zinc-50 p-6">
-              <div id="previewCard" class="bg-white rounded-2xl shadow-soft border border-zinc-100 p-6 transition-all duration-200 preview-card">
+            <div class="rounded-2xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 p-6">
+              <div id="previewCard" class="bg-white dark:bg-zinc-900 rounded-2xl shadow-soft border border-zinc-100 dark:border-zinc-800 p-6 transition-all duration-200 preview-card">
+
                 <!-- header (always) -->
                 <div class="flex items-start justify-between gap-6">
                   <div>
                     <div id="roleText" class="text-[11px] font-bold tracking-wider">UX/UI DESIGNER</div>
                     <div class="text-2xl font-extrabold leading-tight mt-1">Kim Poti</div>
-                    <p class="text-sm text-zinc-600 mt-2">
+                    <p class="text-sm text-zinc-600 dark:text-zinc-300 mt-2">
                       사용자 중심을 디자인하는 디자이너 김포티입니다.
                     </p>
                   </div>
@@ -213,7 +224,9 @@
 
             <!-- Bottom actions -->
             <div class="mt-5 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-              <button class="px-4 py-3 rounded-xl border border-zinc-200 bg-white text-sm">← 이전 단계</button>
+              <button class="px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm">
+                ← 이전 단계
+              </button>
               <div class="flex gap-3">
                 <!-- (삭제) 화면 캡처 / 링크 공유 -->
                 <a href="/front/portfolio-view.html"
@@ -290,20 +303,35 @@
     });
 
     // typography buttons
-    document.getElementById("fontSans").addEventListener("click", ()=>{
+    const fontSansBtn = document.getElementById("fontSans");
+    const fontSerifBtn = document.getElementById("fontSerif");
+
+    const fontActiveClass =
+      "border border-amber-300 bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 text-left";
+
+    const fontInactiveClass =
+      "border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded-xl p-3 text-left";
+
+    fontSansBtn.addEventListener("click", () => {
       font = "sans";
-      document.getElementById("fontSans").className = "border border-amber-300 bg-amber-50 rounded-xl p-3 text-left";
-      document.getElementById("fontSerif").className = "border border-zinc-200 rounded-xl p-3 text-left";
+
+      fontSansBtn.className = fontActiveClass;
+      fontSerifBtn.className = fontInactiveClass;
+
       previewCardEl.classList.remove("font-serif");
       renderPreview();
     });
-    document.getElementById("fontSerif").addEventListener("click", ()=>{
+
+    fontSerifBtn.addEventListener("click", () => {
       font = "serif";
-      document.getElementById("fontSerif").className = "border border-amber-300 bg-amber-50 rounded-xl p-3 text-left";
-      document.getElementById("fontSans").className = "border border-zinc-200 rounded-xl p-3 text-left";
+
+      fontSerifBtn.className = fontActiveClass;
+      fontSansBtn.className = fontInactiveClass;
+
       previewCardEl.classList.add("font-serif");
       renderPreview();
     });
+
 
     // helpers
     const accentMap = {
@@ -319,17 +347,19 @@
       sectionListEl.innerHTML = "";
       sections.forEach((s, idx)=>{
         const item = document.createElement("div");
-        item.className = "drag-item flex items-center justify-between gap-3 border border-zinc-200 rounded-xl p-3 bg-white";
+        item.className = "drag-item flex items-center justify-between gap-3 border border-zinc-200 dark:border-zinc-700 rounded-xl p-3 bg-white dark:bg-zinc-900";
+
         item.draggable = true;
         item.dataset.id = s.id;
 
         const left = document.createElement("div");
         left.className = "flex items-center gap-3 min-w-0";
         left.innerHTML = `
-          <div class="w-8 h-8 rounded-lg bg-zinc-100 grid place-items-center text-sm" title="드래그 핸들">⠿</div>
+          <div class="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-800 grid place-items-center text-sm" title="드래그 핸들">⠿</div>
+
           <div class="min-w-0">
             <div class="flex items-center gap-2">
-              <span class="text-xs text-zinc-500 font-semibold">SECTION ${idx+1}</span>
+              <span class="text-xs text-zinc-500 dark:text-zinc-400 font-semibold">SECTION ${idx+1}</span>
               <span class="text-sm">${s.icon}</span>
             </div>
             <div class="font-semibold truncate">${s.title}</div>
@@ -339,7 +369,7 @@
         const right = document.createElement("div");
         right.className = "flex items-center gap-2";
         right.innerHTML = `
-          <label class="flex items-center gap-2 text-xs text-zinc-500">
+          <label class="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
             <span>${s.visible ? "ON" : "OFF"}</span>
             <input type="checkbox" ${s.visible ? "checked":""} class="w-4 h-4 accent-amber-400" />
           </label>
@@ -415,7 +445,7 @@
         grid.className = "grid sm:grid-cols-2 gap-4";
         visibleSections.forEach(s=>{
           const card = document.createElement("div");
-          card.className = "border border-zinc-100 rounded-2xl p-4 bg-white";
+          card.className = "border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 bg-white dark:bg-zinc-900";
           card.appendChild(renderSectionHeader(s, a));
           card.appendChild(renderSectionBody(s));
           grid.appendChild(card);
@@ -458,35 +488,53 @@
     }
 
     function renderSectionBody(section){
-      const body = document.createElement("div");
-      body.className = "mt-2";
+    const body = document.createElement("div");
+    body.className = "mt-2";
 
-      if(section.title === "PROJECTS" && Array.isArray(section.content)){
-        const grid = document.createElement("div");
-        grid.className = "grid sm:grid-cols-2 gap-3";
+    if(section.title === "PROJECTS" && Array.isArray(section.content)){
+      const grid = document.createElement("div");
+      grid.className = "grid sm:grid-cols-2 gap-3";
 
-        section.content.forEach(p=>{
-          const card = document.createElement("div");
-          card.className = "border border-zinc-100 rounded-xl p-3 bg-white";
-          card.innerHTML = `
-            <div class="flex items-start justify-between gap-2">
-              <div class="font-semibold text-sm">${p.name}</div>
-              <span class="text-[11px] text-zinc-500">${p.period}</span>
+      section.content.forEach(p=>{
+        const card = document.createElement("div");
+        card.className =
+          "border border-zinc-100 dark:border-zinc-800 rounded-xl p-3 bg-white dark:bg-zinc-900";
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+              ${p.name}
             </div>
-            <div class="mt-2 flex flex-wrap gap-1.5">
-              ${p.tags.map(t=>`<span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 text-[11px]">${t}</span>`).join("")}
-            </div>
-          `;
-          grid.appendChild(card);
-        });
+            <span class="text-[11px] text-zinc-500 dark:text-zinc-400">
+              ${p.period}
+            </span>
+          </div>
 
-        body.appendChild(grid);
-        return body;
-      }
+          <div class="mt-2 flex flex-wrap gap-1.5">
+            ${p.tags.map(t=>`
+              <span class="px-2 py-0.5 rounded-full
+                bg-zinc-100 dark:bg-zinc-800
+                text-zinc-700 dark:text-zinc-200
+                text-[11px]">
+                ${t}
+              </span>
+            `).join("")}
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      body.appendChild(grid);
+      return body;
+    }
+
+  /* 기존 EXPERIENCE / 기본 처리 로직은 그대로 */
+
 
       if(section.title === "EXPERIENCE" && Array.isArray(section.content)){
         const ul = document.createElement("ul");
-        ul.className = "text-sm text-zinc-700 list-disc pl-5 space-y-1";
+        ul.className = "text-sm text-zinc-700 dark:text-zinc-200 list-disc pl-5 space-y-1";
         section.content.forEach(line=>{
           const li = document.createElement("li");
           li.textContent = line;
@@ -497,7 +545,7 @@
       }
 
       const p = document.createElement("p");
-      p.className = "text-sm text-zinc-700";
+      p.className = "text-sm text-zinc-700 dark:text-zinc-200";
       p.textContent = String(section.content ?? "");
       body.appendChild(p);
       return body;
@@ -505,7 +553,8 @@
 
     function renderSectionBlock(section, a){
       const wrap = document.createElement("div");
-      wrap.className = "border border-zinc-100 rounded-2xl p-4 bg-white";
+      wrap.className = "border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 bg-white dark:bg-zinc-900";
+
       wrap.appendChild(renderSectionHeader(section, a));
       wrap.appendChild(renderSectionBody(section));
       return wrap;
