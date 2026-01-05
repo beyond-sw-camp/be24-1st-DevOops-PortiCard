@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/header.css">  
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <script>
+      tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          boxShadow: { soft: '0 12px 32px rgba(0,0,0,.08)' },
+          fontFamily: {
+            sans: ['Noto Sans KR', 'sans-serif'],
+            poppins: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+        /* ✅ 테마 변수(라이트 기본) */
+        :root{
+            --bg: #ffffff;
+            --text: #18181b;          /* zinc-900 */
+            --muted: #71717a;         /* zinc-500 */
+            --card: #ffffff;
+            --border: #e4e4e7;        /* zinc-200 */
+            --input: #ffffff;
+            --hover: #f4f4f5;         /* zinc-100 */
+            --shadow: 0 10px 30px rgba(24,24,27,.06);
+
+            --accent: #facc15;        /* amber-400 */
+            --accentSoft: rgba(250,204,21,.18);
+        }
+
+        /* ✅ 다크 테마 변수 */
+        html.dark{
+            --bg: #09090b;            /* zinc-950 */
+            --text: #fafafa;          /* zinc-50 */
+            --muted: #a1a1aa;         /* zinc-400 */
+            --card: #18181b;          /* zinc-900 */
+            --border: #3f3f46;        /* zinc-700 */
+            --input: #111113;         /* 살짝 더 어둡게 */
+            --hover: #27272a;         /* zinc-800 */
+            --shadow: 0 18px 45px rgba(0,0,0,.35);
+        }
+
+        body{
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* ✅ 공통 카드/그림자 */
+        .card{
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--card);
+        }
+        .soft-shadow{ box-shadow: var(--shadow); }
+
+        /* ✅ 입력류(검색/태그/셀렉트) */
+        .ui-input, .ui-select{
+            width: 100%;
+            background: var(--input);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 16px;
+            outline: none;
+        }
+        .ui-input::placeholder{ color: var(--muted); }
+        .ui-input:focus, .ui-select:focus{
+            box-shadow: 0 0 0 3px rgba(250,204,21,.25);
+            border-color: rgba(250,204,21,.55);
+        }
+
+        /* ✅ 버튼(기본/강조) */
+        .btn{
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-weight: 800;
+        }
+        .btn:hover{ background: var(--hover); }
+
+        .btn-accent{
+            border-color: rgba(250,204,21,.55);
+            background: var(--accent);
+            color: #111827;
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-weight: 900;
+        }
+        .btn-accent:hover{ filter: brightness(0.97); }
+
+        /* ✅ 탭 */
+        .tab-btn{
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            border-radius: 16px;
+            padding: 10px 14px;
+            font-weight: 800;
+        }
+        .tab-btn:hover{ background: var(--hover); }
+
+        .tab-btn[aria-selected="true"]{
+            background: var(--accentSoft);
+            border-color: rgba(250,204,21,.55);
+            color: var(--text);
+            font-weight: 900;
+        }
+
+        /* ✅ 스크롤바 */
+        .thin-scroll::-webkit-scrollbar { width: 10px; }
+        .thin-scroll::-webkit-scrollbar-thumb {
+            background: rgba(161,161,170,.35);
+            border-radius: 999px;
+            border: 3px solid transparent;
+            background-clip: padding-box;
+        }
+        html.dark .thin-scroll::-webkit-scrollbar-thumb{
+            background: rgba(113,113,122,.55);
+        }
+  </style>
+</head>
+
+<body class="bg-white text-zinc-900 font-sans dark:bg-zinc-950 dark:text-zinc-100">
+  <!-- ✅ 헤더: 너가 말한 방식 그대로 -->
+  <div id="app-header"></div>
+    <div id="authModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card">
+      <div class="rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-black text-gray-900 dark:text-white">회원 선택</p>
+          <button id="authClose" class="w-9 h-9 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center justify-center" aria-label="닫기">✕</button>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <a href="login.html" class="w-full px-4 py-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow transition text-left block">
+            <span class="text-base font-black text-gray-900 dark:text-white">👤 개인</span>
+          </a>
+          <a href="login.html" class="w-full px-4 py-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow transition text-left block">
+            <span class="text-base font-black text-gray-900 dark:text-white">🏢 법인</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="assets/js/header.js"></script>
+
+  <!-- 페이지 타이틀 영역 -->
+  <main class="max-w-7xl mx-auto px-5 pt-10 pb-14">
+    <div class="flex items-end justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight">커뮤니티</h1>
+      </div>
+
+      <!-- 오른쪽 상단 액션 -->
+      <div class="flex items-center gap-2">
+        <button id="btnNewPost"
+          class="px-4 py-2.5 rounded-2xl border border-zinc-200 hover:bg-zinc-50 font-bold">
+          글쓰기
+        </button>
+        <button id="btnMyPosts"
+          class="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-zinc-900 font-extrabold shadow">
+          내 글/댓글
+        </button>
+      </div>
+    </div>
+
+    <!-- 3컬럼 레이아웃 -->
+    <section class="mt-8 grid grid-cols-12 gap-6">
+      <!-- 왼쪽: 필터/카테고리 -->
+      <aside class="col-span-12 lg:col-span-3">
+        <div class="card soft-shadow p-5">
+          <div class="flex items-center justify-between">
+            <div class="font-extrabold">탐색</div>
+            <button id="btnReset" class="text-sm font-bold text-zinc-500 hover:text-zinc-900">
+              초기화
+            </button>
+          </div>
+
+          <!-- 카테고리 -->
+          <div class="mt-4">
+            <div class="text-xs text-zinc-500 font-semibold mb-2">카테고리</div>
+            <div class="grid grid-cols-2 gap-2">
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="ALL">전체</button>
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="QNA">Q&A</button>
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="SHOWCASE">작품/자랑</button>
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="CAREER">취업/커리어</button>
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="STUDY">스터디</button>
+              <button class="cat-btn px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                data-cat="FREE">자유</button>
+            </div>
+          </div>
+
+          <!-- 정렬/필터 -->
+          <div class="mt-5 space-y-4">
+            <div>
+              <div class="text-xs text-zinc-500 font-semibold mb-2">정렬</div>
+              <select id="sortSelect"
+                class="w-full px-4 py-3 rounded-2xl border border-zinc-200 bg-white font-bold">
+                <option value="HOT">인기순</option>
+                <option value="NEW">최신순</option>
+                <option value="COMMENT">댓글 많은 순</option>
+              </select>
+            </div>
+
+            <div>
+              <div class="text-xs text-zinc-500 font-semibold mb-2">태그(기술스택)</div>
+              <input id="tagInput"
+                class="w-full px-4 py-3 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                placeholder="예) Spring, React, AWS" />
+              <p class="mt-2 text-xs text-zinc-500">
+                쉼표로 여러 개 입력 가능
+              </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <input id="onlySolved" type="checkbox" class="w-4 h-4 accent-amber-400" />
+              <label for="onlySolved" class="text-sm font-bold text-zinc-700">해결된 Q&A만</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 왼쪽 아래: 가이드 카드 -->
+        <div class="card soft-shadow p-5 mt-5">
+          <div class="font-extrabold">커뮤니티 가이드</div>
+          <ul class="mt-3 text-sm text-zinc-600 space-y-2">
+            <li>• 질문은 재현 정보/에러 로그를 같이 올려줘</li>
+            <li>• 포트폴리오/명함 링크 공유는 환영</li>
+            <li>• 공격적/비하 표현은 삭제될 수 있음</li>
+          </ul>
+        </div>
+      </aside>
+
+      <!-- 가운데: 피드 -->
+      <section class="col-span-12 lg:col-span-6">
+        <!-- 검색/탭 -->
+        <div class="card soft-shadow p-5">
+          <div class="flex flex-col md:flex-row md:items-center gap-3">
+            <div class="flex-1 relative">
+              <input id="searchInput"
+                class="w-full px-5 py-3 rounded-2xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                placeholder="제목/내용/작성자 검색" />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400">⌘K</span>
+            </div>
+
+            <div class="flex gap-2">
+              <button class="tab-btn px-4 py-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                aria-selected="true" data-tab="FEED">전체 피드</button>
+              <button class="tab-btn px-4 py-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                aria-selected="false" data-tab="FOLLOW">팔로잉</button>
+              <button class="tab-btn px-4 py-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm"
+                aria-selected="false" data-tab="BOOKMARK">북마크</button>
+            </div>
+          </div>
+
+          <!-- 결과 요약 -->
+          <div class="mt-4 flex items-center justify-between">
+            <div class="text-sm text-zinc-500">
+              <span id="resultCount" class="font-extrabold text-zinc-900">0</span>개의 글
+            </div>
+            <button id="btnRefresh"
+              class="px-3 py-2 rounded-xl border border-zinc-200 hover:bg-zinc-50 font-bold text-sm">
+              새로고침
+            </button>
+          </div>
+        </div>
+
+        <!-- 게시글 리스트 -->
+        <div id="postList" class="mt-5 space-y-4 thin-scroll">
+          <!-- 샘플 카드 (JS에서 렌더) -->
+        </div>
+
+        <!-- 더보기 -->
+        <div class="mt-6">
+          <button id="btnMore"
+            class="w-full card soft-shadow px-5 py-4 hover:bg-zinc-50 font-extrabold">
+            더 보기
+          </button>
+        </div>
+      </section>
+
+      <!-- 오른쪽: 프로필/위젯 -->
+      <aside class="col-span-12 lg:col-span-3 space-y-5">
+        <!-- 내 요약 -->
+        <div class="card soft-shadow p-5">
+          <div class="flex items-center justify-between">
+            <div class="font-extrabold">내 프로필 요약</div>
+            <span class="text-xs font-extrabold px-2 py-1 rounded-full bg-amber-100 text-amber-700">Demo</span>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-zinc-500 font-semibold mb-1">관심 분야</div>
+            <div class="font-extrabold text-lg">Backend / Fullstack</div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-xs text-zinc-500 font-semibold mb-2">내 키워드</div>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1.5 rounded-full border border-zinc-200 text-sm font-bold">Spring</span>
+              <span class="px-3 py-1.5 rounded-full border border-zinc-200 text-sm font-bold">JPA</span>
+              <span class="px-3 py-1.5 rounded-full border border-zinc-200 text-sm font-bold">MySQL</span>
+            </div>
+          </div>
+
+          <button class="mt-5 w-full px-4 py-3 rounded-2xl bg-zinc-900 hover:bg-zinc-800 text-white font-extrabold">
+            내 명함 불러오기
+          </button>
+
+          <p class="mt-3 text-xs text-zinc-500">
+            커뮤니티 추천은 ‘키워드’ 기반으로 개인화될 수 있음(데모).
+          </p>
+        </div>
+
+        <!-- 알림/인기글 -->
+        <div class="card soft-shadow p-5">
+          <div class="flex items-center justify-between">
+            <div class="font-extrabold">오늘의 인기</div>
+            <button class="text-sm font-bold text-amber-600 hover:text-amber-700">새로고침</button>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <a href="#" class="block p-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50">
+              <div class="text-sm font-extrabold">면접 질문 리스트 공유</div>
+              <div class="mt-1 text-xs text-zinc-500">댓글 24 · 좋아요 112</div>
+            </a>
+            <a href="#" class="block p-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50">
+              <div class="text-sm font-extrabold">포트폴리오 README 구조 추천</div>
+              <div class="mt-1 text-xs text-zinc-500">댓글 18 · 좋아요 89</div>
+            </a>
+            <a href="#" class="block p-3 rounded-2xl border border-zinc-200 hover:bg-zinc-50">
+              <div class="text-sm font-extrabold">Spring 프로젝트 배포 질문</div>
+              <div class="mt-1 text-xs text-zinc-500">댓글 11 · 좋아요 63</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- 저장/활동 -->
+        <div class="card soft-shadow p-5">
+          <div class="flex items-center justify-between">
+            <div class="font-extrabold">내 활동</div>
+          </div>
+          <div class="mt-4 grid grid-cols-3 gap-2">
+            <div class="p-3 rounded-2xl border border-zinc-200">
+              <div class="text-xs text-zinc-500 font-semibold">작성</div>
+              <div class="text-2xl font-extrabold mt-1">3</div>
+            </div>
+            <div class="p-3 rounded-2xl border border-zinc-200">
+              <div class="text-xs text-zinc-500 font-semibold">댓글</div>
+              <div class="text-2xl font-extrabold mt-1">12</div>
+            </div>
+            <div class="p-3 rounded-2xl border border-zinc-200">
+              <div class="text-xs text-zinc-500 font-semibold">북마크</div>
+              <div class="text-2xl font-extrabold mt-1">5</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    // ✅ 데모 데이터
+    const demoPosts = [
+      { id: 1, cat: "QNA", solved: true,  title: "Spring Security 로그인 세션 질문", author: "바강", tags: ["Spring","Security"], like: 23, comment: 7, time: "방금 전" },
+      { id: 2, cat: "SHOWCASE", solved: false, title: "포트폴리오 명함 UI 작업 공유", author: "성훈", tags: ["UI","Tailwind"], like: 51, comment: 12, time: "12분 전" },
+      { id: 3, cat: "CAREER", solved: false, title: "신입 백엔드 포트폴리오 섹션 구성 조언", author: "JSH", tags: ["Backend","Portfolio"], like: 34, comment: 18, time: "1시간 전" },
+      { id: 4, cat: "FREE", solved: false, title: "개발하면서 멘탈 관리 어떻게 해?", author: "익명", tags: ["Talk"], like: 17, comment: 9, time: "3시간 전" },
+      { id: 5, cat: "STUDY", solved: false, title: "CS 스터디 같이 할 사람", author: "민수", tags: ["Study","CS"], like: 9, comment: 4, time: "어제" },
+    ];
+
+    let state = {
+      cat: "ALL",
+      tab: "FEED",
+      q: "",
+      sort: "HOT",
+      tags: "",
+      onlySolved: false,
+      page: 1,
+      pageSize: 4,
+    };
+
+    const $ = (sel) => document.querySelector(sel);
+    const $$ = (sel) => document.querySelectorAll(sel);
+
+    function score(post){
+      // 간단한 인기 점수(데모)
+      return post.like * 2 + post.comment;
+    }
+
+    function applyFilters(){
+      const q = state.q.trim().toLowerCase();
+      const tagSet = state.tags.split(",").map(s => s.trim()).filter(Boolean).map(s => s.toLowerCase());
+
+      let list = demoPosts.slice();
+
+      if (state.cat !== "ALL") list = list.filter(p => p.cat === state.cat);
+      if (state.onlySolved) list = list.filter(p => p.solved);
+
+      if (q) {
+        list = list.filter(p =>
+          p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q) || p.tags.join(" ").toLowerCase().includes(q)
+        );
+      }
+
+      if (tagSet.length) {
+        list = list.filter(p => {
+          const tags = p.tags.map(t => t.toLowerCase());
+          return tagSet.every(t => tags.includes(t));
+        });
+      }
+
+      if (state.sort === "HOT") list.sort((a,b) => score(b) - score(a));
+      if (state.sort === "COMMENT") list.sort((a,b) => b.comment - a.comment);
+      if (state.sort === "NEW") list.sort((a,b) => a.id < b.id ? 1 : -1);
+
+      return list;
+    }
+
+    function render(){
+      const list = applyFilters();
+      $("#resultCount").textContent = list.length;
+
+      const sliced = list.slice(0, state.page * state.pageSize);
+      $("#postList").innerHTML = sliced.map(p => `
+        <article class="card soft-shadow p-5 hover:bg-zinc-50 transition-colors">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xs font-extrabold px-2 py-1 rounded-full border border-zinc-200">${p.cat}</span>
+                ${p.cat==="QNA" ? `
+                  <span class="text-xs font-extrabold px-2 py-1 rounded-full ${p.solved ? "bg-emerald-100 text-emerald-700" : "bg-zinc-100 text-zinc-600"}">
+                    ${p.solved ? "해결됨" : "미해결"}
+                  </span>` : ""}
+                <span class="text-xs text-zinc-500 font-semibold">${p.time}</span>
+              </div>
+
+              <h3 class="text-lg font-extrabold truncate">${p.title}</h3>
+
+              <div class="mt-2 flex flex-wrap gap-2">
+                ${p.tags.map(t => `<span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700">${t}</span>`).join("")}
+              </div>
+
+              <div class="mt-3 text-sm text-zinc-500">
+                작성자 <span class="font-extrabold text-zinc-700">${p.author}</span>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-end gap-2 shrink-0">
+              <button class="px-3 py-2 rounded-xl border border-zinc-200 hover:bg-white font-extrabold text-sm">북마크</button>
+              <div class="text-xs text-zinc-500 font-semibold">
+                ❤️ <span class="text-zinc-900 font-extrabold">${p.like}</span>
+                · 💬 <span class="text-zinc-900 font-extrabold">${p.comment}</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join("");
+
+      // 더보기 버튼 표시
+      const canMore = list.length > sliced.length;
+      $("#btnMore").style.display = canMore ? "block" : "none";
+    }
+
+    // 이벤트 바인딩
+    $$(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.cat = btn.dataset.cat;
+        state.page = 1;
+        render();
+      });
+    });
+
+    $$(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.tab = btn.dataset.tab;
+        $$(".tab-btn").forEach(b => b.setAttribute("aria-selected", "false"));
+        btn.setAttribute("aria-selected", "true");
+        state.page = 1;
+        render();
+      });
+    });
+
+    $("#searchInput").addEventListener("input", (e) => {
+      state.q = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    $("#sortSelect").addEventListener("change", (e) => {
+      state.sort = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    $("#tagInput").addEventListener("input", (e) => {
+      state.tags = e.target.value;
+      state.page = 1;
+      render();
+    });
+
+    $("#onlySolved").addEventListener("change", (e) => {
+      state.onlySolved = e.target.checked;
+      state.page = 1;
+      render();
+    });
+
+    $("#btnMore").addEventListener("click", () => {
+      state.page += 1;
+      render();
+    });
+
+    $("#btnReset").addEventListener("click", () => {
+      state = { ...state, cat:"ALL", q:"", sort:"HOT", tags:"", onlySolved:false, page:1 };
+      $("#searchInput").value = "";
+      $("#tagInput").value = "";
+      $("#sortSelect").value = "HOT";
+      $("#onlySolved").checked = false;
+      render();
+    });
+
+    $("#btnRefresh").addEventListener("click", () => {
+      state.page = 1;
+      render();
+    });
+
+    $("#btnNewPost").addEventListener("click", () => {
+      alert("글쓰기(모달/페이지 이동)는 연결만 하면 됨!");
+    });
+
+    // 초기 렌더
+    render();
+  </script>
+</body>
+</html>

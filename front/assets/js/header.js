@@ -145,8 +145,57 @@ document.addEventListener("DOMContentLoaded", async () => {
     const themeBtn = document.getElementById("themeBtn");
     themeBtn?.addEventListener("click", () => {
       if (typeof window.toggleTheme === "function") window.toggleTheme();
-      else document.documentElement.classList.toggle("dark");
+      else document.documentElement.classList.toggle("light-theme");
     });
+    const chatBtn = document.getElementById("chatBtn");
+    chatBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      window.location.href = "chat.html";
+    });
+    // ✅ 알림 팝업 토글
+const notiBtn = document.getElementById("notiBtn");
+const notiPopup = document.getElementById("notiPopup");
+const notiClear = document.getElementById("notiClear");
+
+let notiOpen = false;
+
+function setNoti(open) {
+  notiOpen = open;
+  if (notiPopup) {
+    notiPopup.classList.toggle("hidden", !open);
+  }
+}
+
+// 버튼 클릭
+notiBtn?.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  setNoti(!notiOpen);
+});
+
+// 바깥 클릭 닫기
+document.addEventListener("click", (e) => {
+  if (!notiOpen) return;
+  if (notiPopup?.contains(e.target) || notiBtn?.contains(e.target)) return;
+  setNoti(false);
+});
+
+// ESC 닫기
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") setNoti(false);
+});
+
+// 모두 읽음
+notiClear?.addEventListener("click", (e) => {
+  e.preventDefault();
+  // 👉 여기서 실제로는 알림 read 처리 API 호출
+  setNoti(false);
+
+  // 뱃지 숨기기
+  const badge = notiBtn?.querySelector("span");
+  if (badge) badge.style.display = "none";
+});
+
   } catch (e) {
     console.error(e);
   }
