@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="ko" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // ✅ 2. Tailwind 설정에 폰트 패밀리 추가
+    tailwind.config = { 
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Noto Sans KR', 'sans-serif'],
+            poppins: ['Poppins', 'sans-serif'],
+          }
+        }
+      }
+    };
+    function toggleTheme() {
+      document.documentElement.classList.toggle('dark');
+    }
+  </script>
+
+  <title>Poticard - 포트폴리오 명함</title>
+  <style>
+    .bg-pastel-yellow { background-color: #FEF9C3; }
+    .text-point-yellow { color: #FACC15; }
+    .border-point-yellow { border-color: #FACC15; }
+    .ring-point-yellow { --tw-ring-color: #FACC15; }
+
+    /* ✅ 헤더 네비 호버 서브메뉴 */
+    .nav-item { position: relative; }
+    .nav-panel {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 14px);
+      transform: translateX(-50%);
+      width: 320px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
+    }
+    .nav-item:hover .nav-panel {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
+    .nav-item::after{
+        content: "";
+        position: absolute;
+        left: -12px;
+        right: -12px;
+        top: 100%;
+        height: 20px;          /* ✅ 14px보다 크게 (안 끊기게) */
+        background: transparent;
+    }
+
+    /* ✅ (추가) submenu 자체 hover 중에도 유지 (안전망) */
+        .nav-item:hover .nav-panel,
+        .nav-item:hover::after{
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* ✅ (수정) 명함은 hover가 아니라 클릭으로도 카드처럼 뜨게 */
+    html.namecard-open #flyout-namecard .nav-panel{
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transform: translateX(-50%) translateY(0) !important;
+    }
+
+    /* ✅ "명함 옆 이모지"로 전체 메뉴(4개 패널) 펼치기: 겹치지 않게 */
+    .menu-open #mainNav{
+      display: grid !important;
+      position: fixed;
+      top: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(1120px, calc(100vw - 32px));
+      padding: 16px;
+      gap: 16px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: start;
+
+      border: 1px solid #f3f4f6;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 24px 60px rgba(0,0,0,.12);
+      z-index: 9999;
+    }
+    .dark.menu-open #mainNav{
+      border-color: #27272a;
+      background: rgba(24, 24, 27, 0.92);
+      box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    }
+
+    .menu-open #mainNav .nav-item{
+      position: static;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .menu-open #mainNav .nav-panel{
+      position: static;
+      left: auto;
+      top: auto;
+      transform: none;
+      width: 100%;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: none;
+    }
+
+    .menu-open #mainNav .nav-item .nav-title a{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 900;
+      color: #111827;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(250, 204, 21, 0.12);
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      width: fit-content;
+    }
+    .dark.menu-open #mainNav .nav-item .nav-title a{
+      color: #fff;
+      background: rgba(250, 204, 21, 0.10);
+      border-color: rgba(250, 204, 21, 0.25);
+    }
+
+    @media (max-width: 1024px){
+      .menu-open #mainNav{
+        grid-template-columns: 1fr;
+        top: 76px;
+      }
+    }
+    @media (min-width: 640px) and (max-width: 1024px){
+      .menu-open #mainNav{
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* ✅ 이모지(전체메뉴 버튼)에는 hover로 패널이 뜨면 안됨 */
+    #menuBtn:hover + a + .nav-panel,
+    #menuBtn:hover ~ .nav-panel{
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      transform: translateX(-50%) !important;
+    }
+
+    /* ✅ 로그인/회원가입 팝업 */
+    .modal-backdrop{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .15s ease, visibility .15s ease;
+      z-index: 10000;
+    }
+    .modal-open .modal-backdrop{
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .modal-card{
+      position: absolute;
+      left: 50%;
+      top: 22%;
+      transform: translateX(-50%);
+      width: min(420px, calc(100vw - 32px));
+    }
+
+    /* ✅ 카드 hover 미리보기(가로) */
+    .card-preview{
+      position: fixed;
+      left: 50%;
+      top: 96px;
+      transform: translateX(-50%) translateY(6px);
+      width: min(920px, calc(100vw - 32px));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+      z-index: 9000;
+    }
+    .card-preview.show{
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+      pointer-events: auto;
+    }
+
+    /* ✅ 카드 상세 팝업 */
+    .cardModal-open .card-modal{
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+    .card-modal{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .15s ease, visibility .15s ease;
+      z-index: 10050;
+    }
+    .card-modal .inner{
+      position: absolute;
+      left: 50%;
+      top: 20%;
+      transform: translateX(-50%);
+      width: min(820px, calc(100vw - 32px));
+    }
+
+    /* ==========================================================
+       ✅ (핵심) “촤라락” 카드 덱(겹침) 슬라이더
+       ========================================================== */
+    .deck-wrap{
+      position: relative;
+      width: 100%;
+      display: grid;
+      place-items: center;
+      padding: 8px 0 0;
+    }
+
+    /* 덱 배경: 살짝 카드 자리감 */
+    .deck-surface{
+      width: min(720px, 100%);
+      height: clamp(420px, 52vw, 520px);
+      border-radius: 32px;
+      background: rgba(255,255,255,.45);
+      border: 1px solid rgba(0,0,0,.04);
+      box-shadow: 0 26px 70px rgba(0,0,0,.08);
+      position: relative;
+      overflow: hidden;
+    }
+    .dark .deck-surface{
+      background: rgba(24,24,27,.35);
+      border-color: rgba(255,255,255,.06);
+      box-shadow: 0 26px 70px rgba(0,0,0,.28);
+    }
+
+    /* 카드 스택 영역 */
+    .card-deck{
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      perspective: 1400px;
+      touch-action: pan-y; /* 모바일 스와이프 */
+    }
+
+    .deck-card{
+      position: absolute;
+      width: clamp(220px, 26vw, 260px);
+      height: clamp(340px, 38vw, 392px);
+      border-radius: 20px;
+      transform-origin: 50% 120%;
+      transition:
+        transform 520ms cubic-bezier(.2,.9,.18,1),
+        opacity 240ms ease,
+        filter 420ms ease;
+      will-change: transform;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* 촤라락 느낌: 이동 순간 살짝 “쓸림” */
+    .deck-anim-left .deck-card{ transition-timing-function: cubic-bezier(.12,.95,.12,1); }
+    .deck-anim-right .deck-card{ transition-timing-function: cubic-bezier(.12,.95,.12,1); }
+
+    /* 흐릿하게 뒤로 */
+    .deck-card.is-far{
+      opacity: 0;
+      pointer-events: none;
+      filter: blur(1px);
+    }
+    .deck-card.is-back{
+      filter: saturate(.95) contrast(.98);
+      opacity: .92;
+    }
+    .deck-card.is-front{
+      opacity: 1;
+      filter: none;
+      pointer-events: auto;
+    }
+
+    /* 화살표 버튼 */
+    .deck-arrow{
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(0,0,0,.06);
+      box-shadow: 0 18px 40px rgba(0,0,0,.10);
+      z-index: 9999;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .dark .deck-arrow{
+      background: rgba(24,24,27,.75);
+      border-color: rgba(255,255,255,.08);
+      box-shadow: 0 18px 40px rgba(0,0,0,.30);
+    }
+    .deck-arrow:hover{ transform: translateY(-50%) scale(1.06); }
+    .deck-arrow:active{ transform: translateY(-50%) scale(.98); }
+    .deck-arrow.left{ left: 18px; }
+    .deck-arrow.right{ right: 18px; }
+
+    /* 덱 하단 도트(현재 카드 표시) */
+    .deck-dots{
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 60;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid rgba(0,0,0,.05);
+      backdrop-filter: blur(10px);
+    }
+    .dark .deck-dots{
+      background: rgba(24,24,27,.55);
+      border-color: rgba(255,255,255,.08);
+    }
+    .dot{
+      width: 7px; height: 7px; border-radius: 999px;
+      background: rgba(17,24,39,.20);
+    }
+    .dark .dot{ background: rgba(255,255,255,.22); }
+    .dot.active{ background: rgba(250, 204, 21, .95); }
+
+    /* 반응형: 모바일에서는 카드 간격/회전 줄이기 */
+    @media (max-width: 640px){
+      .deck-arrow.left{ left: 10px; }
+      .deck-arrow.right{ right: 10px; }
+      .deck-surface{
+        height: clamp(420px, 86vw, 520px);
+        border-radius: 26px;
+      }
+    }
+    
+  </style>
+</head>
+
+<body class="bg-white dark:bg-zinc-900 text-gray-800 dark:text-gray-100 font-sans transition-colors duration-300">
+  <!-- HEADER -->
+  <header class="sticky top-0 z-50 border-b border-gray-100 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-8 py-4 flex items-center gap-6">
+      <!-- 1) LEFT: 로고 + 네비 -->
+      <div class="flex items-center gap-6 shrink-0">
+        <a href="index.html" class="flex items-center">
+          <h1 class="text-2xl font-black text-point-yellow tracking-tighter hover:opacity-90 transition">
+            Poticard
+          </h1>
+        </a>
+
+        <!-- 네비 -->
+        <nav id="mainNav" class="hidden lg:flex items-center gap-8 text-gray-400 font-medium">
+          <!-- 명함 -->
+          <div id="flyout-namecard" class="nav-item">
+            <div class="nav-title flex items-center gap-2">
+              <button
+                id="menuBtn"
+                type="button"
+                aria-controls="mainNav"
+                aria-expanded="false"
+                class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:ring-2 ring-point-yellow transition-all select-none"
+                title="전체 메뉴"
+              >
+                <span class="text-lg leading-none">📋</span>
+              </button>
+
+              <a href="#namecard" class="hover:text-gray-600 dark:hover:text-gray-300">
+                명함
+              </a>
+            </div>
+
+            <div class="nav-panel">
+              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
+                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">명함</p>
+                <div class="grid grid-cols-1 gap-2">
+                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">내 명함 보기</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">내 프로필 기반 명함 확인</p>
+                  </a>
+                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">명함 탐색</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">키워드로 명함 찾기</p>
+                  </a>
+                  <a href="#namecard" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">오늘의 인기 명함</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">추천/트렌딩 카드 모아보기</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 포트폴리오 -->
+          <div id="flyout-portfolio" class="nav-item">
+            <div class="nav-title">
+              <a href="#portfolio" class="hover:text-gray-600 dark:hover:text-gray-300">포트폴리오</a>
+            </div>
+            <div class="nav-panel">
+              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
+                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">포트폴리오</p>
+                <div class="grid grid-cols-1 gap-2">
+                  <a href="#portfolio" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">내 포트폴리오</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">작성한 포트폴리오 모아보기</p>
+                  </a>
+                  <a href="#portfolio" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">포트폴리오 검색</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">기술 스택/키워드로 검색</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 채용공고 -->
+          <div id="flyout-jobs" class="nav-item">
+            <div class="nav-title">
+              <a href="#jobs" class="hover:text-gray-600 dark:hover:text-gray-300">채용공고</a>
+            </div>
+            <div class="nav-panel">
+              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
+                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">채용공고</p>
+                <div class="grid grid-cols-1 gap-2">
+                  <a href="#jobs" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">맞춤 추천 공고</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">내 키워드 기반 추천</p>
+                  </a>
+                  <a href="#jobs" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">마감 임박 공고</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">D-day 기준 정렬</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 커뮤니티 -->
+          <div id="flyout-community" class="nav-item">
+            <div class="nav-title">
+              <a href="#chat" class="hover:text-gray-600 dark:hover:text-gray-300">커뮤니티</a>
+            </div>
+            <div class="nav-panel">
+              <div class="rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-xl p-4">
+                <p class="text-xs font-black text-gray-900 dark:text-white mb-3">커뮤니티</p>
+                <div class="grid grid-cols-1 gap-2">
+                  <a href="#chat" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">자유 게시판</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">후기/잡담/공유</p>
+                  </a>
+                  <a href="#chat" class="px-3 py-2 rounded-xl bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow border border-transparent hover:border transition">
+                    <p class="text-sm font-bold text-gray-900 dark:text-white">질문 & 답변</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">기술/포트폴리오 피드백</p>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- 2) CENTER: 검색 -->
+      <div class="hidden md:flex flex-1 justify-center min-w-0">
+        <div class="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 w-full max-w-[520px]">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-50 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input class="bg-transparent outline-none text-sm w-full placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                 placeholder="어떤 명함/기술 키워드를 찾고 있나요?" />
+        </div>
+      </div>
+
+      <!-- 3) RIGHT: 로그인/회원가입 + 아이콘 -->
+      <div class="flex items-center gap-3 shrink-0">
+        <div class="flex items-center gap-2 pr-2 border-r border-gray-100 dark:border-zinc-800">
+          <a id="authBtn" href="javascript:void(0)" class="text-sm font-bold text-gray-900 dark:text-white px-3 py-2 rounded-full border border-gray-200 dark:border-zinc-700 hover:border-point-yellow transition">
+            로그인/회원가입
+          </a>
+        </div>
+
+        <button onclick="toggleTheme()" class="p-2 rounded-xl bg-gray-100 dark:bg-zinc-800 hover:ring-2 ring-point-yellow transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+        </button>
+
+        <button class="hidden sm:inline-flex p-2 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-full">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 22 22" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        </button>
+
+        <button class="hidden sm:inline-flex p-2 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-full relative">
+          <span class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-point-yellow rounded-full"></span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 21 21" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ✅ 카드 hover 미리보기(가로/간단+상세) -->
+  <div id="cardPreview" class="card-preview" aria-hidden="true">
+    <div class="rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/92 dark:bg-zinc-900/92 backdrop-blur-md shadow-2xl p-5">
+      <div class="flex items-start gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-2xl shrink-0" id="pvIcon">🃏</div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center justify-between gap-3">
+            <p class="text-sm font-black text-gray-900 dark:text-white truncate" id="pvTitle">UX/UI Specialist · Kim Poti</p>
+            <span class="text-[10px] font-bold text-point-yellow bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded text-orange-600 dark:text-yellow-300 shrink-0" id="pvBadge">추천</span>
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1" id="pvSub">poticard.io/kim-poti · 최근 수정됨</p>
+          <p class="text-sm mt-3 text-gray-800 dark:text-gray-200 leading-relaxed" id="pvDesc">
+            이 카드에 대한 간단하지만 상세한 설명이 여기에 표시됩니다.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2" id="pvTags"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 로그인/회원가입 팝업 (버튼 2개만) -->
+  <div id="authModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-card">
+      <div class="rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-sm font-black text-gray-900 dark:text-white">회원 선택</p>
+          <button id="authClose" class="w-9 h-9 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center justify-center" aria-label="닫기">✕</button>
+        </div>
+        <div class="grid grid-cols-1 gap-3">
+          <a href="login.html" class="w-full px-4 py-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow transition text-left block">
+            <span class="text-base font-black text-gray-900 dark:text-white">👤 개인</span>
+          </a>
+          <a href="login.html" class="w-full px-4 py-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/60 hover:border-point-yellow transition text-left block">
+            <span class="text-base font-black text-gray-900 dark:text-white">🏢 법인</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ 카드 상세 팝업(클릭) -->
+  <div id="cardModal" class="card-modal" aria-hidden="true">
+    <div class="inner">
+      <div class="rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-2xl p-6">
+        <div class="flex items-start justify-between gap-3 mb-4">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-12 h-12 rounded-2xl bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center text-2xl shrink-0" id="cmIcon">🃏</div>
+            <div class="min-w-0">
+              <p class="text-base font-black text-gray-900 dark:text-white truncate" id="cmTitle">카드 상세</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" id="cmSub">요약 정보</p>
+            </div>
+          </div>
+          <button id="cardClose" class="w-9 h-9 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 flex items-center justify-center" aria-label="닫기">✕</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+            <p class="text-xs font-black text-gray-900 dark:text-white mb-2">한 줄 요약</p>
+            <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed" id="cmOne"></p>
+          </div>
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50">
+            <p class="text-xs font-black text-gray-900 dark:text-white mb-2">상세 설명</p>
+            <p class="text-sm text-gray-700 dark:text-gray-200 leading-relaxed" id="cmDesc"></p>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-2" id="cmTags"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto px-8 py-10 flex flex-col lg:flex-row gap-12">
+    <section id="namecard" class="flex-1 flex flex-col gap-6">
+      <div class="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-zinc-800/50 rounded-3xl
+            p-6 sm:p-10 transition-colors
+            min-h-[420px] lg:min-h-[520px]
+            h-[calc(100vh-160px)] max-h-[620px]">
+        <div class="w-full flex items-center justify-between mb-6">
+          <h2 class="text-lg font-black">오늘의 인기 명함</h2>
+
+          <button
+            type="button"
+            onclick="location.hash='#namecard'; window.scrollTo({top: document.getElementById('namecard').getBoundingClientRect().top + window.scrollY - 90, behavior:'smooth'});"
+            class="text-[11px] font-bold text-point-yellow bg-yellow-50 dark:bg-yellow-900/30 px-3 py-1.5 rounded-full text-orange-600 dark:text-yellow-300 hover:ring-2 ring-point-yellow transition"
+          >
+            전체보기
+          </button>
+        </div>
+
+        <!-- ✅ (핵심) 카드 덱 슬라이더 -->
+        <div class="deck-wrap w-full">
+          <div class="deck-surface">
+            <div id="deck" class="card-deck" aria-label="추천 명함 카드 덱" role="region">
+              <!-- 화살표 -->
+              <button id="deckPrev" class="deck-arrow left" aria-label="이전 명함">
+                <span class="text-xl">‹</span>
+              </button>
+              <button id="deckNext" class="deck-arrow right" aria-label="다음 명함">
+                <span class="text-xl">›</span>
+              </button>
+
+              <!-- ✅ 카드들 (여러 장 겹치기) -->
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🧩"
+                   data-title="Backend · Spring/AWS/MySQL"
+                   data-sub="poticard.io/backend · 최근 수정됨"
+                   data-badge="최신"
+                   data-one="대규모 트래픽에서도 안정적인 백엔드 설계/구현이 가능한 프로필."
+                   data-desc="Spring 기반 API 설계, MySQL 인덱스 최적화, AWS 배포/모니터링까지 한 번에 보여주는 카드입니다. 운영 경험과 성능 개선(지연/처리량) 포인트를 강조합니다."
+                   data-tags="Spring,AWS,MySQL,Performance">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Spring · AWS · MySQL</div>
+                </div>
+                <p class="font-black text-lg">Backend</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">최근 수정됨</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">Spring</span>
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">AWS</span>
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">MySQL</span>
+                </div>
+              </div>
+
+              <div class="deck-card card-item bg-pastel-yellow dark:bg-yellow-400 border-2 border-white dark:border-zinc-700 shadow-2xl p-6 text-gray-900"
+                   data-icon="🃏"
+                   data-title="UX/UI Specialist · Kim Poti"
+                   data-sub="poticard.io/kim-poti · 최근 수정됨"
+                   data-badge="추천"
+                   data-one="사용자 흐름을 끝까지 설계하고, 디자인 시스템으로 일관성까지 잡는 UX/UI 카드."
+                   data-desc="Figma 프로토타이핑 → 디자인 시스템 구축 → 실제 UI 적용까지 연결되는 작업을 보여줍니다. 사용자 중심 설계, 컴포넌트화, 협업(핸드오프) 강점을 강조합니다."
+                   data-tags="Figma,Design System,Prototyping,UX">
+                <div class="flex flex-col h-full">
+                  <div class="w-16 h-16 bg-white rounded-full mb-6 flex items-center justify-center text-2xl shadow-inner">🃏</div>
+                  <h3 class="text-xl font-black mb-2 leading-tight">UX/UI Specialist<br/>Kim Poti</h3>
+                  <p class="text-sm opacity-80 mb-4 underline decoration-2">poticard.io/kim-poti</p>
+                  <div class="mt-auto">
+                    <div class="flex flex-wrap gap-2">
+                      <span class="text-[11px] font-black bg-white/75 px-2 py-1 rounded-full">Figma</span>
+                      <span class="text-[11px] font-black bg-white/75 px-2 py-1 rounded-full">Design System</span>
+                      <span class="text-[11px] font-black bg-white/75 px-2 py-1 rounded-full">Prototyping</span>
+                    </div>
+                    <button class="mt-4 w-full py-3 rounded-2xl bg-gray-900 text-white font-black hover:opacity-90 transition">
+                      명함 상세 보기
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="⚡"
+                   data-title="Frontend · React/TypeScript"
+                   data-sub="poticard.io/frontend · 인기"
+                   data-badge="인기"
+                   data-one="빠른 UI 구현과 타입 안정성을 동시에 잡는 프론트엔드 카드."
+                   data-desc="React 컴포넌트 구조화, TypeScript 기반 유지보수, UI 성능 튜닝을 보여주는 카드입니다. 상태관리/렌더 최적화/인터랙션 구현을 강조합니다."
+                   data-tags="React,TypeScript,UI,Optimization">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">React · TypeScript</div>
+                </div>
+                <p class="font-black text-lg">Frontend</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">인기</p>
+                <div class="mt-4 flex flex-wrap gap-2">
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">React</span>
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">TS</span>
+                  <span class="text-[11px] font-bold bg-gray-50 dark:bg-zinc-900/50 px-2 py-1 rounded-full">UI</span>
+                </div>
+              </div>
+
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="📊"
+                   data-title="Data · Python/ML"
+                   data-sub="poticard.io/data · 트렌딩"
+                   data-badge="트렌딩"
+                   data-one="데이터 분석부터 간단한 ML까지 빠르게 실험/검증하는 데이터 카드."
+                   data-desc="Pandas/NumPy 기반 분석, 간단한 모델링, 시각화 리포트 작성 역량을 보여줍니다. 문제 정의→지표 설정→실험→결과 공유 흐름을 강조합니다."
+                   data-tags="Python,Pandas,ML,Visualization">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Python · Pandas · ML</div>
+                </div>
+                <p class="font-black text-lg">Data</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">트렌딩</p>
+              </div>
+
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🛠️"
+                   data-title="DevOps · Nginx/Docker"
+                   data-sub="poticard.io/devops · 운영"
+                   data-badge="운영"
+                   data-one="배포/모니터링/장애 대응까지 경험을 담은 DevOps 카드."
+                   data-desc="Nginx 리버스 프록시 구성, Docker 기반 배포, 모니터링(Grafana/Prometheus) 연결 경험을 정리한 카드입니다."
+                   data-tags="Nginx,Docker,CI/CD,Monitoring">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Nginx · Docker · Monitoring</div>
+                </div>
+                <p class="font-black text-lg">DevOps</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">운영</p>
+              </div>
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🛠️"
+                   data-title="DevOps · Nginx/Docker"
+                   data-sub="poticard.io/devops · 운영"
+                   data-badge="운영"
+                   data-one="배포/모니터링/장애 대응까지 경험을 담은 DevOps 카드."
+                   data-desc="Nginx 리버스 프록시 구성, Docker 기반 배포, 모니터링(Grafana/Prometheus) 연결 경험을 정리한 카드입니다."
+                   data-tags="Nginx,Docker,CI/CD,Monitoring">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Nginx · Docker · Monitoring</div>
+                </div>
+                <p class="font-black text-lg">DevOps</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">운영</p>
+              </div>
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🛠️"
+                   data-title="DevOps · Nginx/Docker"
+                   data-sub="poticard.io/devops · 운영"
+                   data-badge="운영"
+                   data-one="배포/모니터링/장애 대응까지 경험을 담은 DevOps 카드."
+                   data-desc="Nginx 리버스 프록시 구성, Docker 기반 배포, 모니터링(Grafana/Prometheus) 연결 경험을 정리한 카드입니다."
+                   data-tags="Nginx,Docker,CI/CD,Monitoring">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Nginx · Docker · Monitoring</div>
+                </div>
+                <p class="font-black text-lg">DevOps</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">운영</p>
+              </div>
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🛠️"
+                   data-title="DevOps · Nginx/Docker"
+                   data-sub="poticard.io/devops · 운영"
+                   data-badge="운영"
+                   data-one="배포/모니터링/장애 대응까지 경험을 담은 DevOps 카드."
+                   data-desc="Nginx 리버스 프록시 구성, Docker 기반 배포, 모니터링(Grafana/Prometheus) 연결 경험을 정리한 카드입니다."
+                   data-tags="Nginx,Docker,CI/CD,Monitoring">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Nginx · Docker · Monitoring</div>
+                </div>
+                <p class="font-black text-lg">DevOps</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">운영</p>
+              </div>
+              <div class="deck-card card-item bg-white dark:bg-zinc-800 border border-gray-100 dark:border-zinc-700 shadow-xl p-6"
+                   data-icon="🛠️"
+                   data-title="DevOps · Nginx/Docker"
+                   data-sub="poticard.io/devops · 운영"
+                   data-badge="운영"
+                   data-one="배포/모니터링/장애 대응까지 경험을 담은 DevOps 카드."
+                   data-desc="Nginx 리버스 프록시 구성, Docker 기반 배포, 모니터링(Grafana/Prometheus) 연결 경험을 정리한 카드입니다."
+                   data-tags="Nginx,Docker,CI/CD,Monitoring">
+                <div class="w-full h-32 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl mb-4 text-center py-10 opacity-60 text-xs">
+                  기술 키워드
+                  <div class="mt-2 text-[10px]">Nginx · Docker · Monitoring</div>
+                </div>
+                <p class="font-black text-lg">DevOps</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">운영</p>
+              </div>
+
+              <!-- 도트 -->
+              <div id="deckDots" class="deck-dots" aria-hidden="true"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="portfolio" class="mt-10 p-6 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm w-full">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-black">내 포트폴리오</h2>
+          <button class="text-sm font-bold text-point-yellow hover:opacity-80">전체 보기</button>
+        </div>
+
+        <div class="space-y-3">
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50 hover:border-point-yellow transition cursor-pointer">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-black">포트폴리오 제목 예시</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">2026-01-02 · 기술 스택: Spring, MySQL</p>
+              </div>
+              <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200 bg-white/60 dark:bg-zinc-900/60 px-2 py-1 rounded-full">최신</span>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-800/50 hover:border-point-yellow transition cursor-pointer">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-black">두 번째 포트폴리오</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">2025-12-29 · 기술 스택: Figma, UI/UX</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">목록에는 “제목/작성일/기술 스택”이 보여야 해요.</p>
+      </div>
+    </section>
+
+    <aside class="w-full lg:w-80 flex flex-col gap-6">
+      <div id="jobs">
+        <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+          나와 맞는 채용공고
+          <span class="w-2 h-2 bg-point-yellow rounded-full"></span>
+        </h2>
+
+        <div class="space-y-4">
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-point-yellow transition-all cursor-pointer group shadow-sm">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-[10px] font-bold text-point-yellow bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded text-orange-600 dark:text-yellow-400">D-3</span>
+            </div>
+            <h4 class="font-bold text-sm mb-1">카카오뱅크</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">UI/UX 디자인 파트 채용</p>
+          </div>
+
+          <div class="p-4 rounded-2xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-point-yellow transition-all cursor-pointer group shadow-sm">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-[10px] font-bold text-point-yellow bg-yellow-50 dark:bg-yellow-900/30 px-2 py-1 rounded text-orange-600 dark:text-yellow-400">D-7</span>
+            </div>
+            <h4 class="font-bold text-sm mb-1">네이버</h4>
+            <p class="text-xs text-gray-500 dark:text-gray-400">프론트엔드 개발 채용</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="chat" class="p-5 rounded-3xl border border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-black">채팅 · 알림</h3>
+          <span class="text-[10px] font-bold bg-yellow-50 dark:bg-yellow-900/30 text-orange-600 dark:text-yellow-300 px-2 py-1 rounded">2 NEW</span>
+        </div>
+
+        <div class="space-y-3">
+          <button class="w-full p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-100 dark:border-zinc-700 hover:border-point-yellow transition text-left">
+            <p class="text-sm font-black">채팅방 목록</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">최근 메시지 기준 정렬</p>
+          </button>
+
+          <button class="w-full p-4 rounded-2xl bg-gray-50 dark:bg-zinc-800/60 border border-gray-100 dark:border-zinc-700 hover:border-point-yellow transition text-left">
+            <p class="text-sm font-black">받은 알림</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">미확인 알림 개수 표시</p>
+          </button>
+        </div>
+
+        <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">채팅/알림 기능은 요구사항에 포함돼 있어요.</p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="border-t border-gray-100 dark:border-zinc-800 py-10">
+    <div class="max-w-7xl mx-auto px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-sm text-gray-500 dark:text-gray-400">
+      <p class="font-semibold">© Poticard</p>
+      <div class="flex gap-4">
+        <a class="hover:text-gray-800 dark:hover:text-white" href="#terms">이용약관</a>
+        <a class="hover:text-gray-800 dark:hover:text-white" href="#privacy">개인정보처리방침</a>
+        <a class="hover:text-gray-800 dark:hover:text-white" href="#support">고객센터</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script>
+    (function () {
+      // ✅ 메뉴 토글: "명함 옆 📋 버튼"
+      const btn = document.getElementById('menuBtn');
+      const nav = document.getElementById('mainNav');
+
+      const flyouts = [
+        document.getElementById('flyout-namecard'),
+        document.getElementById('flyout-portfolio'),
+        document.getElementById('flyout-jobs'),
+        document.getElementById('flyout-community')
+      ].filter(Boolean);
+
+      // ✅ 명함(탭)만 클릭 드롭다운 토글
+      const namecardFlyout = document.getElementById('flyout-namecard');
+      const namecardLink = namecardFlyout ? namecardFlyout.querySelector('.nav-title a[href="#namecard"]') : null;
+      const namecardPanel = namecardFlyout ? namecardFlyout.querySelector('.nav-panel') : null;
+      let namecardOpen = false;
+
+      function setNamecard(open){
+        namecardOpen = open;
+        document.documentElement.classList.toggle('namecard-open', open);
+        if (namecardPanel) {
+          namecardPanel.style.opacity = '';
+          namecardPanel.style.visibility = '';
+          namecardPanel.style.pointerEvents = '';
+        }
+      }
+
+      let forcedOpen = false;
+      function setForced(open) {
+        forcedOpen = open;
+        if (btn) btn.setAttribute('aria-expanded', String(open));
+        document.documentElement.classList.toggle('menu-open', open);
+        flyouts.forEach(f => {
+          if (!f) return;
+          if (open) f.classList.add('force-open');
+          else f.classList.remove('force-open');
+        });
+        if (open) setNamecard(false);
+      }
+
+      if (namecardLink) {
+        namecardLink.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (forcedOpen) setForced(false);
+          setNamecard(!namecardOpen);
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        if (!namecardOpen) return;
+        if (namecardFlyout && namecardFlyout.contains(e.target)) return;
+        setNamecard(false);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setNamecard(false);
+      });
+
+      if (btn && nav) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setNamecard(false);
+          setForced(!forcedOpen);
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!forcedOpen) return;
+          if (nav.contains(e.target) || btn.contains(e.target)) return;
+          setForced(false);
+        });
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') setForced(false);
+        });
+
+        btn.addEventListener('mouseenter', () => {
+          const panel = document.querySelector('#flyout-namecard > .nav-panel');
+          if (!forcedOpen && !namecardOpen && panel) {
+            panel.style.opacity = '0';
+            panel.style.visibility = 'hidden';
+            panel.style.pointerEvents = 'none';
+          }
+        });
+        btn.addEventListener('mouseleave', () => {
+          const panel = document.querySelector('#flyout-namecard > .nav-panel');
+          if (panel) {
+            panel.style.opacity = '';
+            panel.style.visibility = '';
+            panel.style.pointerEvents = '';
+          }
+        });
+      }
+
+      // ✅ 로그인/회원가입 팝업
+      const authBtn = document.getElementById('authBtn');
+      const modal = document.getElementById('authModal');
+      const closeBtn = document.getElementById('authClose');
+
+      function openModal() {
+        document.documentElement.classList.add('modal-open');
+        if (modal) modal.setAttribute('aria-hidden', 'false');
+      }
+      function closeModal() {
+        document.documentElement.classList.remove('modal-open');
+        if (modal) modal.setAttribute('aria-hidden', 'true');
+      }
+
+      if (authBtn && modal) {
+        authBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          openModal();
+        });
+
+        modal.addEventListener('click', (e) => {
+          const card = modal.querySelector('.modal-card');
+          if (card && !card.contains(e.target)) closeModal();
+        });
+
+        if (closeBtn) {
+          closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeModal();
+          });
+        }
+
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') closeModal();
+        });
+      }
+
+      // ✅ 카드 Hover 미리보기 + Click 상세 팝업 (유지)
+      const preview = document.getElementById('cardPreview');
+      const pvIcon = document.getElementById('pvIcon');
+      const pvTitle = document.getElementById('pvTitle');
+      const pvSub = document.getElementById('pvSub');
+      const pvBadge = document.getElementById('pvBadge');
+      const pvDesc = document.getElementById('pvDesc');
+      const pvTags = document.getElementById('pvTags');
+
+      const cardModal = document.getElementById('cardModal');
+      const cardClose = document.getElementById('cardClose');
+      const cmIcon = document.getElementById('cmIcon');
+      const cmTitle = document.getElementById('cmTitle');
+      const cmSub = document.getElementById('cmSub');
+      const cmOne = document.getElementById('cmOne');
+      const cmDesc = document.getElementById('cmDesc');
+      const cmTags = document.getElementById('cmTags');
+
+      let previewLocked = false;
+
+      function setTags(container, tagsCSV, cls) {
+        const tags = (tagsCSV || '').split(',').map(s => s.trim()).filter(Boolean);
+        container.innerHTML = '';
+        tags.slice(0, 8).forEach(t => {
+          const span = document.createElement('span');
+          span.className = cls;
+          span.textContent = t;
+          container.appendChild(span);
+        });
+      }
+
+      function showPreview(el){
+        if (!preview || previewLocked) return;
+        pvIcon.textContent = el.dataset.icon || '🃏';
+        pvTitle.textContent = el.dataset.title || '카드';
+        pvSub.textContent = el.dataset.sub || '';
+        pvBadge.textContent = el.dataset.badge || '정보';
+        pvDesc.textContent = el.dataset.desc || '';
+        setTags(
+          pvTags,
+          el.dataset.tags || '',
+          "text-[11px] font-bold bg-gray-50 dark:bg-zinc-800/60 px-2 py-1 rounded-full"
+        );
+        preview.classList.add('show');
+        preview.setAttribute('aria-hidden', 'false');
+      }
+      function hidePreview(){
+        if (!preview || previewLocked) return;
+        preview.classList.remove('show');
+        preview.setAttribute('aria-hidden', 'true');
+      }
+
+      function openCardModal(el){
+        if (!cardModal) return;
+        cmIcon.textContent = el.dataset.icon || '🃏';
+        cmTitle.textContent = el.dataset.title || '카드 상세';
+        cmSub.textContent = el.dataset.sub || '';
+        cmOne.textContent = el.dataset.one || '';
+        cmDesc.textContent = el.dataset.desc || '';
+        setTags(
+          cmTags,
+          el.dataset.tags || '',
+          "text-[11px] font-bold bg-yellow-50 dark:bg-yellow-900/30 text-orange-600 dark:text-yellow-300 px-2 py-1 rounded-full"
+        );
+
+        document.documentElement.classList.add('cardModal-open');
+        cardModal.setAttribute('aria-hidden', 'false');
+      }
+      function closeCardModal(){
+        if (!cardModal) return;
+        document.documentElement.classList.remove('cardModal-open');
+        cardModal.setAttribute('aria-hidden', 'true');
+      }
+
+      // 카드 이벤트 바인딩(유지)
+      document.querySelectorAll('.card-item').forEach(el => {
+        el.addEventListener('mouseenter', () => showPreview(el));
+        el.addEventListener('mouseleave', () => hidePreview());
+        el.addEventListener('click', (e) => {
+          e.preventDefault();
+          openCardModal(el);
+        });
+      });
+
+      if (preview) {
+        preview.addEventListener('mouseenter', () => { previewLocked = true; });
+        preview.addEventListener('mouseleave', () => {
+          previewLocked = false;
+          hidePreview();
+        });
+      }
+
+      if (cardModal) {
+        cardModal.addEventListener('click', (e) => {
+          const inner = cardModal.querySelector('.inner');
+          if (inner && !inner.contains(e.target)) closeCardModal();
+        });
+      }
+      if (cardClose) cardClose.addEventListener('click', (e) => { e.preventDefault(); closeCardModal(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCardModal(); });
+
+      // ==========================================================
+      // ✅ (핵심) 카드 덱 슬라이더: 화살표/촤라락/겹침/반응형/스와이프
+      // ==========================================================
+      const deck = document.getElementById('deck');
+      const prevBtn = document.getElementById('deckPrev');
+      const nextBtn = document.getElementById('deckNext');
+      const dotsWrap = document.getElementById('deckDots');
+      const cards = Array.from(deck.querySelectorAll('.deck-card'));
+
+      let current = 1; // 가운데 카드부터 시작(UX/UI가 중앙)
+      let animLock = false;
+
+      function clampIndex(i){
+        const n = cards.length;
+        return (i % n + n) % n;
+      }
+
+      function isMobile(){
+        return window.matchMedia('(max-width: 640px)').matches;
+      }
+
+      function renderDots(){
+        if (!dotsWrap) return;
+        dotsWrap.innerHTML = '';
+        cards.forEach((_, i) => {
+          const d = document.createElement('span');
+          d.className = 'dot' + (i === current ? ' active' : '');
+          d.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (animLock) return;
+            // 가까운 방향으로 이동
+            const diff = i - current;
+            if (diff === 0) return;
+            if (Math.abs(diff) <= Math.floor(cards.length/2)) current = i;
+            else current = i; // 단순 이동
+            renderDeck();
+          });
+          dotsWrap.appendChild(d);
+        });
+      }
+
+      function renderDeck(){
+        const n = cards.length;
+
+        // 반응형 파라미터
+        const mobile = isMobile();
+
+  const visibleRange = mobile ? 4 : 5;      // 뒤에 보이는 카드 수(좌/우)
+  const angleStep   = mobile ? 10 : 9;      // 부채꼴 벌어짐(각도)
+  const radius      = mobile ? 260 : 360;   // 부채꼴 반지름(클수록 완만)
+  const depthStep   = mobile ? 28 : 34;     // 뒤로 갈수록 z축(원근)
+  const scaleStep   = mobile ? 0.045 : 0.050;
+
+  cards.forEach((card, i) => {
+    let offset = i - current;
+
+    // ✅ 순환 덱처럼: 가장 가까운 offset으로 정규화
+    if (offset > n/2) offset -= n;
+    if (offset < -n/2) offset += n;
+
+    const abs = Math.abs(offset);
+
+    // ✅ 보여줄 범위 밖은 숨김
+    if (abs > visibleRange){
+      card.classList.add('is-far');
+      card.style.opacity = '0';
+      card.style.pointerEvents = 'none';
+      return;
+    } else {
+      card.classList.remove('is-far');
+    }
+
+    const isFront = (offset === 0);
+    card.classList.toggle('is-front', isFront);
+    card.classList.toggle('is-back', !isFront);
+
+    // ✅ 부채꼴 배치 핵심: offset → angle → (x,y)
+    // angle: 왼쪽(음수), 오른쪽(양수)
+    const angle = offset * angleStep; // deg
+    const rad = angle * Math.PI / 180;
+
+    // x: 원호를 따라 이동
+    const x = Math.sin(rad) * radius;
+
+    // y: 원호를 따라 아래로 내려가며 펼쳐짐(그림처럼 아래쪽이 퍼짐)
+    // (1 - cos) 형태가 "부채꼴" 느낌 좋음
+    const y = (1 - Math.cos(rad)) * (radius * 0.55);
+
+    // 뒤로 갈수록 살짝 작고, 더 뒤로 들어가게
+    const z = -abs * depthStep;          // translateZ
+    const s = 1 - abs * scaleStep;       // scale
+
+    // 카드 자체 회전(부채꼴 느낌)
+    // 중앙은 거의 0도, 좌우는 각도에 비례해서 회전
+    const rotateZ = angle * 0.85;
+
+    // 아주 약한 Y 기울임으로 입체감
+    const rotateY = offset === 0 ? 0 : (offset > 0 ? -6 : 6);
+
+    // z-index는 중앙이 최상단
+    card.style.zIndex = String(100 - abs);
+
+    // ✅ “중앙 카드”는 더 앞/더 또렷하게
+    const extraLift = isFront ? -8 : 0;      // 살짝 위로
+    const extraZ    = isFront ? 40 : 0;      // 살짝 더 앞으로
+
+    card.style.opacity = isFront ? '1' : (mobile ? '0.92' : '0.94');
+
+    card.style.transform =
+      `translateX(${x}px) translateY(${y + extraLift}px) translateZ(${z + extraZ}px)
+       rotateZ(${rotateZ}deg) rotateY(${rotateY}deg) scale(${s})`;
+  });
+
+  renderDots();
+}
+
+      function animateClass(dir){
+        if (!deck) return;
+        deck.classList.remove('deck-anim-left','deck-anim-right');
+        void deck.offsetWidth; // reflow
+        deck.classList.add(dir === 'left' ? 'deck-anim-left' : 'deck-anim-right');
+        setTimeout(() => {
+          deck.classList.remove('deck-anim-left','deck-anim-right');
+        }, 520);
+      }
+
+      function goNext(){
+        if (animLock) return;
+        animLock = true;
+        animateClass('right');
+        current = clampIndex(current + 1);
+        renderDeck();
+        setTimeout(() => animLock = false, 520);
+      }
+
+      function goPrev(){
+        if (animLock) return;
+        animLock = true;
+        animateClass('left');
+        current = clampIndex(current - 1);
+        renderDeck();
+        setTimeout(() => animLock = false, 520);
+      }
+
+      if (nextBtn) nextBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); goNext(); });
+      if (prevBtn) prevBtn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); goPrev(); });
+
+      // 키보드 ← →
+      document.addEventListener('keydown', (e) => {
+        if (document.documentElement.classList.contains('modal-open')) return;
+        if (document.documentElement.classList.contains('cardModal-open')) return;
+        if (e.key === 'ArrowRight') goNext();
+        if (e.key === 'ArrowLeft') goPrev();
+      });
+
+      // 모바일 스와이프
+      let sx = 0, sy = 0, moved = false;
+      if (deck) {
+        deck.addEventListener('touchstart', (e) => {
+          if (!e.touches || !e.touches[0]) return;
+          sx = e.touches[0].clientX;
+          sy = e.touches[0].clientY;
+          moved = false;
+        }, { passive: true });
+
+        deck.addEventListener('touchmove', (e) => {
+          moved = true;
+        }, { passive: true });
+
+        deck.addEventListener('touchend', (e) => {
+          if (!moved) return;
+          const t = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0] : null;
+          if (!t) return;
+          const dx = t.clientX - sx;
+          const dy = t.clientY - sy;
+
+          if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy)) {
+            if (dx < 0) goNext();
+            else goPrev();
+          }
+        }, { passive: true });
+      }
+
+      window.addEventListener('resize', () => renderDeck());
+
+      // 초기 렌더
+      renderDeck();
+
+    })();
+  </script>
+</body>
+</html>
