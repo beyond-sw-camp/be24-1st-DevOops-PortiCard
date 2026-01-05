@@ -5,7 +5,6 @@
 
 /* ✅ 헤더 네비 호버 서브메뉴 */
 .nav-item { position: relative; }
-
 .nav-panel {
   position: absolute;
   left: 50%;
@@ -17,30 +16,28 @@
   pointer-events: none;
   transition: opacity .15s ease, transform .15s ease, visibility .15s ease;
 }
-
 .nav-item:hover .nav-panel {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
-
 .nav-item::after{
-  content: "";
-  position: absolute;
-  left: -12px;
-  right: -12px;
-  top: 100%;
-  height: 20px; /* ✅ 14px보다 크게 (안 끊기게) */
-  background: transparent;
+    content: "";
+    position: absolute;
+    left: -12px;
+    right: -12px;
+    top: 100%;
+    height: 20px;          /* ✅ 14px보다 크게 (안 끊기게) */
+    background: transparent;
 }
 
 /* ✅ (추가) submenu 자체 hover 중에도 유지 (안전망) */
-.nav-item:hover .nav-panel,
-.nav-item:hover::after{
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+    .nav-item:hover .nav-panel,
+    .nav-item:hover::after{
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* ✅ (수정) 명함은 hover가 아니라 클릭으로도 카드처럼 뜨게 */
@@ -71,7 +68,6 @@ html.namecard-open #flyout-namecard .nav-panel{
   box-shadow: 0 24px 60px rgba(0,0,0,.12);
   z-index: 9999;
 }
-
 .dark.menu-open #mainNav{
   border-color: #27272a;
   background: rgba(24, 24, 27, 0.92);
@@ -110,7 +106,6 @@ html.namecard-open #flyout-namecard .nav-panel{
   border: 1px solid rgba(250, 204, 21, 0.25);
   width: fit-content;
 }
-
 .dark.menu-open #mainNav .nav-item .nav-title a{
   color: #fff;
   background: rgba(250, 204, 21, 0.10);
@@ -123,13 +118,20 @@ html.namecard-open #flyout-namecard .nav-panel{
     top: 76px;
   }
 }
-
 @media (min-width: 640px) and (max-width: 1024px){
   .menu-open #mainNav{
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* ✅ 이모지(전체메뉴 버튼)에는 hover로 패널이 뜨면 안됨 */
+#menuBtn:hover + a + .nav-panel,
+#menuBtn:hover ~ .nav-panel{
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) !important;
+}
 
 /* ✅ 로그인/회원가입 팝업 */
 .modal-backdrop{
@@ -143,13 +145,11 @@ html.namecard-open #flyout-namecard .nav-panel{
   transition: opacity .15s ease, visibility .15s ease;
   z-index: 10000;
 }
-
 .modal-open .modal-backdrop{
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
 }
-
 .modal-card{
   position: absolute;
   left: 50%;
@@ -171,7 +171,6 @@ html.namecard-open #flyout-namecard .nav-panel{
   transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
   z-index: 9000;
 }
-
 .card-preview.show{
   opacity: 1;
   visibility: visible;
@@ -185,7 +184,6 @@ html.namecard-open #flyout-namecard .nav-panel{
   visibility: visible;
   pointer-events: auto;
 }
-
 .card-modal{
   position: fixed;
   inset: 0;
@@ -197,7 +195,6 @@ html.namecard-open #flyout-namecard .nav-panel{
   transition: opacity .15s ease, visibility .15s ease;
   z-index: 10050;
 }
-
 .card-modal .inner{
   position: absolute;
   left: 50%;
