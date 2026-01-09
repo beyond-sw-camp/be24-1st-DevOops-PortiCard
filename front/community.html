@@ -377,6 +377,16 @@
     </section>
   </main>
 
+  <!-- 백엔드 통신 -->
+  <script type="module">
+    import communityApi from '../fetch/js/communityApi.js';
+    let communityInitial = await communityApi.getCommunityInfo();
+    console.log(communityInitial);
+
+    
+
+  </script>
+
   <script>
     // ✅ 데모 데이터
     const demoPosts = [
