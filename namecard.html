@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <button id="namecard">명함 요청</button>
+    <button id="projects">뒷면 요청</button>
+    <main>
+        
+    </main>
+    <script type="module">
+        import userApi from './fetch/js/userApi.js';
+            
+        // namecardInfo 가져오기
+        let namecardInfo = await userApi.getNamecardInfo();
+        // 
+
+
+        document.getElementById("projects").addEventListener("click", async () => {
+            let projectInfo = await userApi.getProjectsInfo();
+            console.log(projectInfo);
+        });
+    </script>
+</body>
+</html>
