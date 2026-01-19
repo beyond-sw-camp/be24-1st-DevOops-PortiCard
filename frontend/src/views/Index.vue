@@ -1,11 +1,15 @@
 <template>
-  <div class="min-h-screen bg-[#f1f5f9] p-10 font-sans text-[#333] overflow-x-hidden">
+  <div class="min-h-screen bg-[#f8fafc] p-10 font-sans text-[#333] overflow-x-hidden">
     <div class="max-w-[1280px] mx-auto">
       
       <div class="grid grid-cols-12 gap-8 items-start">
         
         <div class="col-span-4 bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200 p-10 flex flex-col relative overflow-hidden h-[750px]">
           
+          <div class="absolute top-10 right-10 z-30">
+            <h3 class="text-xl font-black text-gray-900">오늘의 명함</h3>
+          </div>
+
           <div class="flex-1 relative flex items-center justify-center" @wheel.prevent="handleScroll">
             <div class="stack-wrapper">
               <div 
@@ -34,12 +38,7 @@
               </div>
             </div>
           </div>
-
-          <div class="z-20 mt-8 pt-6 border-t border-slate-100">
-            <h3 class="text-2xl font-black flex items-center gap-2 text-gray-900">오늘의 명함</h3>
-            <p class="text-sm text-gray-500 mt-2 font-medium">스크롤하여 명함을 탐색하세요</p>
           </div>
-        </div>
 
         <div class="col-span-8 grid grid-cols-8 gap-8">
           
@@ -120,20 +119,28 @@
         </div>
 
       </div>
-
       <div class="mt-16 space-y-6">
-        <h3 class="text-2xl font-black px-2 text-slate-800">회원님을 위한 추천 공고</h3>
-        <div class="grid grid-cols-4 gap-6">
-          <div v-for="i in 4" :key="i" class="bg-white p-7 rounded-[2rem] border border-slate-200 hover:border-yellow-400 hover:shadow-xl transition-all cursor-pointer shadow-sm group">
-            <div class="flex justify-between mb-4">
-              <span class="text-[10px] font-black text-yellow-600 bg-yellow-50 px-3 py-1 rounded-md border border-yellow-100">HOT</span>
-              <i class="fa-regular fa-bookmark text-slate-300 group-hover:text-yellow-400"></i>
-            </div>
-            <h4 class="font-bold text-slate-800 line-clamp-1 group-hover:text-yellow-600">UI/UX 디자이너 채용</h4>
-            <p class="text-xs text-slate-400 mt-1 font-medium">잡코리아 테크랩스</p>
-          </div>
-        </div>
+  <h3 class="text-2xl font-black px-2 text-slate-800">회원님을 위한 추천 공고</h3>
+  <div class="grid grid-cols-4 gap-6">
+    <div v-for="job in [
+      {title: 'UI/UX 디자이너 채용', company: '잡코리아 테크랩스'},
+      {title: '브랜드 디자이너', company: '포티카드 스튜디오'},
+      {title: '프로덕트 디자이너', company: '토스팀'},
+      {title: '콘텐츠 디자이너', company: '라인 플러스'}
+    ]" :key="job.title" 
+    class="bg-white p-7 rounded-[2rem] border border-slate-200 hover:border-yellow-400 hover:shadow-xl transition-all cursor-pointer shadow-sm group">
+      
+      <div class="flex justify-between mb-4">
+        <span class="text-[10px] font-black text-yellow-600 bg-yellow-50 px-3 py-1 rounded-md border border-yellow-100">HOT</span>
+        <i class="fa-regular fa-bookmark text-slate-300 group-hover:text-yellow-400"></i>
       </div>
+      
+      <h4 class="font-bold text-slate-800 line-clamp-1 group-hover:text-yellow-600">{{ job.title }}</h4>
+      <p class="text-xs text-slate-400 mt-1 font-medium">{{ job.company }}</p>
+      
+    </div>
+  </div>
+</div>
 
     </div>
   </div>

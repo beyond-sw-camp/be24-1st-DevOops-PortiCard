@@ -1,509 +1,438 @@
 <script setup>
-import { onMounted } from 'vue'
-onMounted(() => {
-    /* ========= Theme Toggle ========= */
-    (function initTheme(){
-      const saved = localStorage.getItem("theme"); // dark|light|null
-      const root = document.documentElement;
-      if (saved === "dark") root.classList.add("dark");
-      else root.classList.remove("dark");
-    })();
+import { ref, onMounted, computed, nextTick } from 'vue'
+import commonAvatar from '@/image/common.png'
 
-    function toggleTheme(){
-      const root = document.documentElement;
-      const nextDark = !root.classList.contains("dark");
-      root.classList.toggle("dark", nextDark);
-      localStorage.setItem("theme", nextDark ? "dark" : "light");
-    }
+/* --------- 1. 상태 관리 (Reactive State) --------- */
+const rooms = ref([
+  { id: 1, name: "김채용", company: "DevOps Inc.", role: "HR Manager", unread: 2, last: "포트폴리오 잘 봤습니다!", tags: ["Hiring", "Backend"], avatar: commonAvatar, intro: "좋은 인재를 찾는 채용 담당자 김채용입니다.\n함께 성장할 개발자를 기다립니다." },
+  { id: 2, name: "이민수", company: "Side Project", role: "Frontend Dev", unread: 0, last: "DB 설계 같이 보자", tags: ["Study", "React"], avatar: commonAvatar, intro: "효율적인 UI/UX를 고민하는 개발자 이민수입니다.\n클린 코드를 지향합니다." },
+  { id: 3, name: "박지영", company: "Design Lab", role: "Product Designer", unread: 5, last: "일정 가능하실까요?", tags: ["UI/UX", "Figma"], avatar: commonAvatar, intro: "사용자 중심의 경험을 설계하는 박지영입니다.\n디자인 시스템 구축에 관심이 많습니다." },
+  { id: 4, name: "익명", company: "Community", role: "User", unread: 0, last: "좋은 글 감사합니다!", tags: ["Free"], avatar: commonAvatar, intro: "커뮤니티 활동을 즐기는 익명의 사용자입니다.\n반갑습니다!" }
+]);
 
-    /* ========= Demo Data ========= */
-    const rooms = [
-      { id: 1, name: "김채용", company: "DevOps Inc.", role: "HR", unread: 2, last: "포트폴리오 잘 봤습니다!", tags:["Hiring","Backend"] },
-      { id: 2, name: "이민수", company: "Side Project", role: "Dev", unread: 0, last: "DB 설계 같이 보자", tags:["Study","DB"] },
-      { id: 3, name: "박지영", company: "Design Lab", role: "PM", unread: 5, last: "일정 가능하실까요?", tags:["PM","Project"] },
-      { id: 4, name: "익명", company: "Community", role: "User", unread: 0, last: "좋은 글 감사합니다!", tags:["Free"] }
-    ];
+const messagesByRoom = ref({
+  1: [
+    { who: "them", text: "안녕하세요! 포트폴리오 잘 봤습니다. 백엔드 쪽 지원 맞으신가요?", time: "오후 2:03" },
+    { who: "me", text: "네 맞아요! 백엔드/풀스택 관심 있어요. 어떤 포지션인지 궁금합니다.", time: "오후 2:04" },
+    { who: "them", text: "Spring 기반 서비스 운영 경험 있으시면 좋을 것 같아요. 간단히 통화 가능하실까요?", time: "오후 2:05" },
+  ],
+  2: [
+    { who: "them", text: "ERD 그린 거 봤는데 notification 테이블 FK 구성 괜찮아 보여.", time: "어제" },
+    { who: "me", text: "오 고마워. 인덱스도 같이 잡아볼까?", time: "어제" },
+  ],
+  3: [
+    { who: "them", text: "포티카드 커뮤니티 UI 너무 깔끔하네요.", time: "오전 11:10" },
+    { who: "them", text: "글쓰기 페이지도 연결하면 완성도 더 올라갈 것 같아요.", time: "오전 11:11" },
+    { who: "me", text: "맞아요. 지금 채팅 페이지도 작업 중이에요.", time: "오전 11:12" },
+  ],
+  4: [
+    { who: "them", text: "오늘 글 도움 됐어요!", time: "3일 전" },
+    { who: "me", text: "감사합니다 🙂", time: "3일 전" },
+  ],
+});
 
-    const messagesByRoom = {
-      1: [
-        { who:"them", text:"안녕하세요! 포트폴리오 잘 봤습니다. 백엔드 쪽 지원 맞으신가요?", time:"오후 2:03" },
-        { who:"me", text:"네 맞아요! 백엔드/풀스택 관심 있어요. 어떤 포지션인지 궁금합니다.", time:"오후 2:04" },
-        { who:"them", text:"Spring 기반 서비스 운영 경험 있으시면 좋을 것 같아요. 간단히 통화 가능하실까요?", time:"오후 2:05" },
-      ],
-      2: [
-        { who:"them", text:"ERD 그린 거 봤는데 notification 테이블 FK 구성 괜찮아 보여.", time:"어제" },
-        { who:"me", text:"오 고마워. 인덱스도 같이 잡아볼까?", time:"어제" },
-      ],
-      3: [
-        { who:"them", text:"포티카드 커뮤니티 UI 너무 깔끔하네요.", time:"오전 11:10" },
-        { who:"them", text:"글쓰기 페이지도 연결하면 완성도 더 올라갈 것 같아요.", time:"오전 11:11" },
-        { who:"me", text:"맞아요. 지금 채팅 페이지도 작업 중이에요.", time:"오전 11:12" },
-      ],
-      4: [
-        { who:"them", text:"오늘 글 도움 됐어요!", time:"3일 전" },
-        { who:"me", text:"감사합니다 🙂", time:"3일 전" },
-      ],
-    };
+const activeRoomId = ref(null);
+const searchQuery = ref("");
+const messageInput = ref("");
+const messageArea = ref(null);
+const textareaRef = ref(null);
 
-    let activeRoomId = null;
+/* 명함 및 메뉴 관련 상태 */
+const isCardOpen = ref(false);
+const isFlipped = ref(false);
+const isMenuOpen = ref(false); // 드롭다운 메뉴 상태
 
-    const $ = (s) => document.querySelector(s);
-
-
-    function generateUUID() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-    const scheme = (location.protocol === 'https:') ? 'wss' : 'ws';
-    const WS_URL = `${scheme}://${location.host}/chat-ws`;
-    const myUserId =
-  localStorage.getItem("chatUserId") ||
-  (crypto.randomUUID ? crypto.randomUUID() : generateUUID());
-
+/* --------- 2. 유틸리티 & 설정 --------- */
+const myUserId = localStorage.getItem("chatUserId") || (crypto.randomUUID ? crypto.randomUUID() : 'idx-' + Date.now());
 localStorage.setItem("chatUserId", myUserId);
 
-   const myUserName =
-   sessionStorage.getItem("chatUserName") || ("Guest-" + Math.floor(1000 + Math.random() * 9000));
-   sessionStorage.setItem("chatUserName", myUserName);
+const myUserName = sessionStorage.getItem("chatUserName") || ("Guest-" + Math.floor(1000 + Math.random() * 9000));
+sessionStorage.setItem("chatUserName", myUserName);
 
-    let ws = null;
+let ws = null;
 
-    function wsConnect(){
-      ws = new WebSocket(WS_URL);
+/* --------- 3. 계산된 속성 (Computed) --------- */
+const filteredRooms = computed(() => {
+  const q = searchQuery.value.trim().toLowerCase();
+  if (!q) return rooms.value;
+  return rooms.value.filter(r =>
+    (r.name + " " + r.company + " " + r.role + " " + r.tags.join(" ")).toLowerCase().includes(q)
+  );
+});
 
-      ws.onopen = () => {
-        console.log("WS OPEN", WS_URL, myUserName);
-        if (activeRoomId) wsJoin(activeRoomId);
-      };
+const activeRoom = computed(() => rooms.value.find(r => r.id === activeRoomId.value));
+const currentMessages = computed(() => messagesByRoom.value[activeRoomId.value] || []);
 
-      ws.onmessage = (e) => {
-        let msg;
-        try { msg = JSON.parse(e.data); } catch { return; }
+/* --------- 4. 로직 (Methods) --------- */
+const scrollBottom = async () => {
+  await nextTick();
+  if (messageArea.value) {
+    messageArea.value.scrollTop = messageArea.value.scrollHeight;
+  }
+};
 
-        if (msg.type === "chat") {
-          const roomId = Number(msg.roomId);
-          const isMe = String(msg.userId) === String(myUserId);
-          messagesByRoom[roomId] ||= [];
-          messagesByRoom[roomId].push({
-            who: isMe ? "me" : "them",
-            text: msg.text,
-            time: "방금"
-          });
+const wsConnect = () => {
+  const scheme = (location.protocol === 'https:') ? 'wss' : 'ws';
+  const WS_URL = `${scheme}://${location.host}/chat-ws`;
+  ws = new WebSocket(WS_URL);
 
-          const r = rooms.find(x => x.id === roomId);
-          if (r) r.last = msg.text.length > 30 ? msg.text.slice(0,30) + "..." : msg.text;
-          if (roomId === activeRoomId) {renderMessages(activeRoomId);}
-          renderRooms(filterRooms($("#roomSearch").value));
-        }
-      };
+  ws.onopen = () => {
+    if (activeRoomId.value) wsJoin(activeRoomId.value);
+  };
 
-      ws.onclose = () => setTimeout(wsConnect, 800);
-    }
+  ws.onmessage = (e) => {
+    let msg;
+    try { msg = JSON.parse(e.data); } catch { return; }
 
-    function wsJoin(roomId){
-      if (!ws || ws.readyState !== WebSocket.OPEN) return;
-      ws.send(JSON.stringify({
-        type: "join",
-        roomId,
-        userId: myUserId,
-        userName: myUserName
-      }));
-    }
-
-    function wsSendChat(roomId, text){
-      console.log("SEND CHAT", roomId, text);
-      if (!ws || ws.readyState !== WebSocket.OPEN) return;
-      ws.send(JSON.stringify({
-        type: "chat",
-        roomId,
-        userId: myUserId,
-        userName: myUserName,
-        text
-      }));
-    }
-
-    function renderRooms(list){
-      $("#roomCount").textContent = `${list.length}개`;
-      $("#roomList").innerHTML = list.map(r => `
-        <button class="chat-room w-full text-left card soft-shadow p-4 hover:opacity-95 transition"
-          data-room="${r.id}" aria-selected="${r.id===activeRoomId}">
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <div class="flex items-center gap-2">
-                <div class="font-extrabold truncate">${r.name}</div>
-                ${r.unread ? `<span class="text-xs font-extrabold px-2 py-0.5 rounded-full"
-                  style="background: rgba(250,204,21,.18); border:1px solid rgba(250,204,21,.55);">${r.unread}</span>` : ""}
-              </div>
-              <div class="text-sm text-zinc-500 dark:text-zinc-400 truncate mt-1">
-                ${r.company} · ${r.role}
-              </div>
-              <div class="text-sm mt-2 truncate" style="color: var(--muted);">${r.last}</div>
-
-              <div class="mt-3 flex flex-wrap gap-2">
-                ${r.tags.map(t => `<span class="text-xs font-bold px-2 py-1 rounded-full"
-                  style="background: rgba(250,204,21,.12); border:1px solid rgba(250,204,21,.35); color: var(--text);">${t}</span>`).join("")}
-              </div>
-            </div>
-            <i class="fa-solid fa-chevron-right opacity-40 mt-1"></i>
-          </div>
-        </button>
-      `).join("");
-    }
-
-    function renderMessages(roomId){
-  const msgs = messagesByRoom[roomId] || [];
-  const area = $("#messageArea");
-
-  area.innerHTML = msgs.map(m => `
-    <div class="mb-3 w-full flex">
-      <div class="msg-wrap ${m.who==="me" ? "me ml-auto" : "them mr-auto"}">
-        <div class="chat-bubble ${m.who==="me" ? "chat-bubble-me" : "chat-bubble-them"}">
-          ${escapeHtml(m.text)}
-        </div>
-        <div class="text-xs mt-1 ${m.who==="me" ? "text-right" : "text-left"}"
-          style="color: var(--muted);">${m.time}</div>
-      </div>
-    </div>
-  `).join("") || `
-    <div class="text-zinc-500 dark:text-zinc-400 text-sm">대화를 시작해보세요.</div>
-  `;
-
-  area.scrollTop = area.scrollHeight;
-}
-
-
-    function setActiveRoom(roomId){
-      activeRoomId = roomId;
-      const room = rooms.find(r => r.id === roomId);
-      $("#chatTitle").textContent = room ? room.name : "대화";
-      $("#chatSub").textContent = room ? `${room.company} · ${room.role}` : "";
-
-      // 읽음 처리(데모)
-      if (room) room.unread = 0;
-
-      renderRooms(filterRooms($("#roomSearch").value));
-      bindRoomClicks();
-      renderMessages(roomId);
-      wsJoin(roomId);
-
-    }
-
-    function filterRooms(q){
-      const s = (q || "").trim().toLowerCase();
-      if (!s) return rooms;
-      return rooms.filter(r =>
-        (r.name + " " + r.company + " " + r.role + " " + r.tags.join(" ")).toLowerCase().includes(s)
-      );
-    }
-    function sendMessage(){
-      const input = $("#messageInput");
-      const text = input.value.replace(/\r?\n/g, " ").trim();
-
-      if (!activeRoomId){
-        alert("왼쪽에서 채팅방을 먼저 선택해줘!");
-        return;
-      }
-      if (!text) return;
-
-      // ✅ 입력창만 정리
-      input.value = "";
-      autosizeTextarea(input);
-
-      // ✅ WS로 전송만 (UI 반영은 ws.onmessage에서만!)
-      wsSendChat(activeRoomId, text);
-    }
-
-    function quick(text){
-      $("#messageInput").value = text;
-      autosizeTextarea($("#messageInput"));
-      $("#messageInput").focus();
-    }
-
-    function escapeHtml(str){
-      return str
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    function autosizeTextarea(el){
-      el.style.height = "auto";
-      el.style.height = Math.min(el.scrollHeight, 160) + "px";
-    }
-
-    /* ========= Events ========= */
-    $("#roomSearch").addEventListener("input", (e) => {
-      renderRooms(filterRooms(e.target.value));
-      bindRoomClicks();
-    });
-
-    function bindRoomClicks(){
-      document.querySelectorAll("[data-room]").forEach(btn => {
-        btn.addEventListener("click", () => setActiveRoom(Number(btn.dataset.room)));
+    if (msg.type === "chat") {
+      const roomId = Number(msg.roomId);
+      const isMe = String(msg.userId) === String(myUserId);
+      
+      if (!messagesByRoom.value[roomId]) messagesByRoom.value[roomId] = [];
+      messagesByRoom.value[roomId].push({
+        who: isMe ? "me" : "them",
+        text: msg.text,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
+
+      const r = rooms.value.find(x => x.id === roomId);
+      if (r) r.last = msg.text.length > 30 ? msg.text.slice(0, 30) + "..." : msg.text;
+      if (roomId === activeRoomId.value) scrollBottom();
     }
+  };
 
-    $("#sendBtn").addEventListener("click", sendMessage);
+  ws.onclose = () => setTimeout(wsConnect, 1000);
+};
 
-    $("#messageInput").addEventListener("input", (e) => autosizeTextarea(e.target));
+const wsJoin = (roomId) => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  ws.send(JSON.stringify({ type: "join", roomId, userId: myUserId, userName: myUserName }));
+};
 
-    $("#messageInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey){
-        e.preventDefault();
-        sendMessage();
-      }
-    });
+const setActiveRoom = (roomId) => {
+  activeRoomId.value = roomId;
+  const room = rooms.value.find(r => r.id === roomId);
+  if (room) room.unread = 0;
+  isMenuOpen.value = false; // 방 변경 시 메뉴 닫기
+  wsJoin(roomId);
+  scrollBottom();
+};
 
-    $("#btnNewVideoChat").addEventListener("click", () => {
-      // 새 화상 채팅: 대상이 없으면 그냥 새 방으로 이동(파라미터 없이)
-      window.location.href = "/video-chat";
-    });
+const toggleCard = () => {
+  isFlipped.value = false;
+  isCardOpen.value = !isCardOpen.value;
+  isMenuOpen.value = false; // 명함 열 때 메뉴 닫기
+};
 
-    $("#btnNewChat").addEventListener("click", () => {
-      alert("새 채팅 시작(검색/유저 선택) UI는 다음 단계에서 연결하면 됨!");
-    });
+/* 부가 기능 로직 */
+const reportUser = () => {
+  if (!activeRoom.value) return;
+  alert(`${activeRoom.value.name}님을 신고하시겠습니까? 운영팀에서 신속히 검토하겠습니다.`);
+  isMenuOpen.value = false;
+};
 
-    $("#btnVideoCall").addEventListener("click", () => {
-    if (!activeRoomId) return alert("대상을 선택해주세요.");
+const leaveChat = () => {
+  if (!activeRoom.value) return;
+  if (confirm(`'${activeRoom.value.name}'님과의 채팅방을 나가시겠습니까?\n나가면 대화 내용이 모두 삭제됩니다.`)) {
+    rooms.value = rooms.value.filter(r => r.id !== activeRoomId.value);
+    activeRoomId.value = null;
+    isMenuOpen.value = false;
+  }
+};
 
-    // 1. 현재 선택된 채팅방 정보 가져오기
-    const room = rooms.find(r => r.id === activeRoomId);
+const sendMessage = () => {
+  const text = messageInput.value.trim();
+  if (!activeRoomId.value) return alert("채팅방을 먼저 선택해주세요!");
+  if (!text) return;
 
-    // 2. 유저 이름과 ID를 쿼리 스트링으로 구성
-    // encodeURIComponent는 이름에 특수문자나 공백이 있을 경우를 대비해 안전하게 변환해줍니다.
-    const userName = encodeURIComponent(room.name);
-    const url = `/video-chat?id=${room.id}&name=${userName}`;
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({
+      type: "chat", roomId: activeRoomId.value, userId: myUserId, userName: myUserName, text
+    }));
+  } else {
+    if (!messagesByRoom.value[activeRoomId.value]) messagesByRoom.value[activeRoomId.value] = [];
+    messagesByRoom.value[activeRoomId.value].push({ who: "me", text, time: "방금" });
+    scrollBottom();
+  }
+  
+  messageInput.value = "";
+  nextTick(() => autosize());
+};
 
-    // 3. 페이지 이동
-    window.location.href = url;
-    });
+const autosize = () => {
+  const el = textareaRef.value;
+  if (!el) return;
+  el.style.height = "auto";
+  el.style.height = Math.min(el.scrollHeight, 150) + "px";
+};
 
-    $("#btnViewCard").addEventListener("click", () => {
-      if (!activeRoomId) return alert("채팅방을 먼저 선택해줘!");
-      alert("명함 보기(프로필/명함 상세 페이지로 이동) 연결하면 됨!");
-    });
+const quickReply = (text) => {
+  messageInput.value = text;
+  nextTick(() => {
+    autosize();
+    textareaRef.value?.focus();
+  });
+};
 
-    $("#btnMore").addEventListener("click", () => alert("차단/신고/나가기 메뉴(데모)"));
+const handleKeydown = (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+};
 
-    $("#btnAttach").addEventListener("click", () => alert("파일/이미지 첨부(데모)"));
+const startVideoCall = () => {
+  if (!activeRoomId.value) return alert("대상을 선택해주세요.");
+  window.location.href = `/video-chat?id=${activeRoom.value.id}&name=${encodeURIComponent(activeRoom.value.name)}`;
+};
 
-    /* ========= Init ========= */
-    renderRooms(rooms);
-    bindRoomClicks();
-    autosizeTextarea($("#messageInput"));
-    wsConnect();
+onMounted(() => {
+  wsConnect();
+  if (localStorage.getItem("theme") === "dark") document.documentElement.classList.add("dark");
 });
 </script>
 
 <template>
-<div class="font-sans">
-  <main class="max-w-7xl mx-auto px-5 pt-10 pb-14">
-    <div class="flex items-end justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-extrabold tracking-tight">채팅</h1>
+  <div class="chat-app max-w-7xl mx-auto px-4 py-8 h-[calc(100vh-40px)] flex flex-col relative overflow-hidden font-sans">
+    
+    <transition name="fade">
+      <div v-if="isCardOpen" @click.self="toggleCard" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <transition name="card-pop" appear>
+          <div class="relative w-full max-w-md aspect-[1.58/1] perspective-1000" @click="isFlipped = !isFlipped">
+            <div :class="['relative w-full h-full transform-style-3d shadow-2xl rounded-2xl duration-700 cursor-pointer', isFlipped ? 'flipped' : '']">
+              <div class="absolute inset-0 w-full h-full bg-white rounded-2xl border border-slate-100 p-8 backface-hidden overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 rounded-bl-full"></div>
+                <div class="flex flex-col justify-between h-full relative z-10 text-left">
+                  <div class="flex justify-between items-start">
+                    <div class="pr-4">
+                      <p class="text-xs font-bold text-amber-600 uppercase tracking-widest mb-1">{{ activeRoom.role }}</p>
+                      <h2 class="text-3xl font-black text-slate-900 tracking-tight mb-2">{{ activeRoom.name }}</h2>
+                      <p class="text-sm text-slate-500 leading-relaxed whitespace-pre-line">{{ activeRoom.intro }}</p>
+                    </div>
+                    <div class="w-20 h-20 rounded-full border-4 border-slate-50 shadow-md overflow-hidden bg-slate-100 flex-shrink-0">
+                      <img :src="activeRoom.avatar" class="w-full h-full object-cover">
+                    </div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="flex flex-wrap gap-2">
+                      <span v-for="tag in activeRoom.tags" :key="tag" class="px-2.5 py-1 bg-slate-50 border border-slate-100 text-slate-600 text-[10px] font-bold rounded-md">#{{ tag }}</span>
+                    </div>
+                    <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                      <div class="flex gap-3 text-slate-400">
+                        <i class="fa-brands fa-github text-xl hover:text-slate-900 transition-colors"></i>
+                        <i class="fa-solid fa-envelope text-xl hover:text-slate-900 transition-colors"></i>
+                      </div>
+                      <i class="fa-solid fa-qrcode text-3xl text-slate-800 opacity-80"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute inset-0 w-full h-full bg-slate-900 rounded-2xl p-8 backface-hidden rotate-y-180 text-white flex flex-col justify-center shadow-2xl">
+                <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                  <span class="w-1.5 h-6 bg-amber-400 rounded-full"></span> Contact Info
+                </h3>
+                <div class="space-y-4 text-base opacity-90">
+                  <div class="flex items-center gap-3"><i class="fa-solid fa-phone w-5 text-amber-400"></i> 010-****-{{ activeRoom.id }}000</div>
+                  <div class="flex items-center gap-3"><i class="fa-solid fa-link w-5 text-amber-400"></i> {{ activeRoom.company.toLowerCase().replace(' ', '') }}.com</div>
+                  <div class="flex items-center gap-3"><i class="fa-solid fa-location-dot w-5 text-amber-400"></i> Seoul, South Korea</div>
+                </div>
+                <p class="mt-8 text-[10px] uppercase tracking-widest text-slate-500 text-center font-bold">Click to see front side</p>
+              </div>
+            </div>
+          </div>
+        </transition>
       </div>
+    </transition>
 
-      <div class="flex items-center gap-2">
-        <button id="btnNewVideoChat" class="btn-accent">
-          <i class="fa-solid fa-video"></i>
-          <span class="hidden sm:inline ml-2">새 화상 채팅</span>
-        </button>
-        <button id="btnNewChat" class="btn-accent">
-          <i class="fa-solid fa-pen-to-square"></i>
-          <span class="hidden sm:inline ml-2">새 채팅</span>
+    <header class="flex items-center justify-between mb-6 shrink-0">
+      <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">채팅</h1>
+      <div class="flex gap-2">
+        <button @click="alert('준비 중입니다.')" class="btn-icon bg-amber-400 hover:scale-105 transition-transform" title="새 채팅">
+          <i class="fa-solid fa-plus text-amber-950"></i>
         </button>
       </div>
-    </div>
+    </header>
 
-    <!-- 2컬럼: 채팅방 리스트 / 대화창 -->
-    <section class="mt-8 grid grid-cols-12 gap-6">
-      <!-- 왼쪽: 채팅방 리스트 -->
-      <aside class="col-span-12 lg:col-span-4">
-        <div class="card soft-shadow p-5">
-          <div class="flex items-center justify-between">
-            <div class="font-extrabold">채팅 목록</div>
-            <span id="roomCount" class="text-sm font-bold text-zinc-500 dark:text-zinc-400">0</span>
+    <div class="flex-1 grid grid-cols-12 gap-6 min-h-0">
+      <aside class="col-span-12 lg:col-span-4 flex flex-col gap-4 min-h-0">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col min-h-0">
+          <div class="p-5 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-4">
+              <span class="font-bold text-slate-400 uppercase text-[10px] tracking-widest">Chat List</span>
+              <span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-bold">{{ filteredRooms.length }}</span>
+            </div>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input 
+                v-model="searchQuery"
+                class="w-full bg-slate-50 dark:bg-slate-800/50 border-none rounded-2xl py-3 pl-11 pr-4 text-sm focus:ring-2 focus:ring-amber-400 transition-all outline-none dark:text-white" 
+                placeholder="이름, 회사 또는 키워드" 
+              />
+            </div>
           </div>
 
-          <div class="mt-4">
-            <input id="roomSearch" class="ui-input" placeholder="이름/회사/키워드 검색" />
+          <div class="flex-1 overflow-y-auto p-3 space-y-2 thin-scroll">
+            <button 
+              v-for="room in filteredRooms" 
+              :key="room.id"
+              @click="setActiveRoom(room.id)"
+              :class="['room-card w-full text-left p-4 rounded-2xl transition-all flex items-start gap-4 border', 
+                       activeRoomId === room.id ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/50 shadow-md' : 'hover:bg-slate-50 dark:hover:bg-slate-800/50 border-transparent']"
+            >
+              <div class="relative shrink-0">
+                <div class="w-12 h-12 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800">
+                  <img :src="room.avatar" class="w-full h-full object-cover">
+                </div>
+                <div v-if="room.unread > 0" class="absolute -top-1 -right-1 bg-amber-400 text-amber-950 text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+                  {{ room.unread }}
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex justify-between items-center mb-0.5">
+                  <h3 class="font-bold truncate text-slate-900 dark:text-slate-100">{{ room.name }}</h3>
+                  <span class="text-[10px] text-slate-400 font-medium">12:34</span>
+                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate mb-2">{{ room.company }} · {{ room.role }}</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300 truncate font-medium">{{ room.last }}</p>
+              </div>
+            </button>
           </div>
-
-          <div id="roomList" class="mt-4 space-y-3 max-h-[520px] overflow-auto thin-scroll pr-1"></div>
         </div>
       </aside>
 
-      <!-- 오른쪽: 대화 -->
-      <section class="col-span-12 lg:col-span-8">
-        <div class="card soft-shadow overflow-hidden">
-          <!-- 상단 헤더 -->
-          <div class="px-5 py-4 border-b" style="border-color: var(--border);">
-            <div class="flex items-center justify-between gap-3">
-              <div class="min-w-0">
+      <section class="col-span-12 lg:col-span-8 flex flex-col min-h-0 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <template v-if="activeRoomId">
+          <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl overflow-hidden shadow-sm">
+                <img :src="activeRoom.avatar" class="w-full h-full object-cover">
+              </div>
+              <div>
                 <div class="flex items-center gap-2">
-                  <div class="dot"></div>
-                  <div id="chatTitle" class="font-extrabold truncate">대화를 선택하세요</div>
+                  <h2 class="font-black text-slate-900 dark:text-white">{{ activeRoom.name }}</h2>
+                  <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 </div>
-                <div id="chatSub" class="text-sm text-zinc-500 dark:text-zinc-400 mt-1 truncate">
-                  채팅방을 클릭하면 메시지가 표시됩니다.
-                </div>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ activeRoom.company }} · {{ activeRoom.role }}</p>
               </div>
-
-              <div class="flex items-center gap-2">
-                <button id="btnVideoCall" class="btn" title="화상 채팅 시작">
-                  <i class="fa-solid fa-video"></i>
-                  <span class="hidden sm:inline ml-2">화상 채팅</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button @click="startVideoCall" class="btn-action" title="화상 채팅">
+                <i class="fa-solid fa-video"></i>
+              </button>
+              <button @click="toggleCard" class="btn-action bg-amber-50 dark:bg-amber-900/20 text-amber-600" title="명함 정보">
+                <i class="fa-solid fa-address-card"></i>
+              </button>
+              
+              <div class="relative">
+                <button @click="isMenuOpen = !isMenuOpen" class="btn-action" :class="{'bg-slate-100 dark:bg-slate-800': isMenuOpen}">
+                  <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
-                <button id="btnViewCard" class="btn">
-                  <i class="fa-regular fa-id-card"></i>
-                  <span class="hidden sm:inline ml-2">명함</span>
-                </button>
-                <button id="btnMore" class="btn">
-                  <i class="fa-solid fa-ellipsis"></i>
-                </button>
+                
+                <transition name="fade-in">
+                  <div v-if="isMenuOpen" class="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 overflow-hidden py-1">
+                    <button @click="reportUser" class="w-full px-4 py-3 text-left text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-3">
+                      <i class="fa-solid fa-triangle-exclamation text-amber-500"></i> 신고하기
+                    </button>
+                    <div class="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+                    <button @click="leaveChat" class="w-full px-4 py-3 text-left text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center gap-3">
+                      <i class="fa-solid fa-door-open"></i> 채팅방 나가기
+                    </button>
+                  </div>
+                </transition>
+                
+                <div v-if="isMenuOpen" @click="isMenuOpen = false" class="fixed inset-0 z-40"></div>
               </div>
             </div>
           </div>
 
-          <!-- 메시지 영역 -->
-          <div id="messageArea" class="px-5 py-5 h-[520px] overflow-auto thin-scroll">
-            <!-- empty state -->
-            <div class="text-zinc-500 dark:text-zinc-400 text-sm">
-              왼쪽에서 채팅방을 선택해 주세요.
+          <div ref="messageArea" class="flex-1 overflow-y-auto p-6 space-y-6 thin-scroll bg-slate-50/50 dark:bg-slate-950/20">
+            <div v-for="(m, idx) in currentMessages" :key="idx" :class="['flex w-full', m.who === 'me' ? 'justify-end' : 'justify-start']">
+              <div :class="['max-w-[75%] flex flex-col', m.who === 'me' ? 'items-end' : 'items-start']">
+                <div :class="['bubble', m.who === 'me' ? 'bubble-me' : 'bubble-them']">
+                  {{ m.text }}
+                </div>
+                <span class="text-[10px] mt-1.5 text-slate-400 font-bold px-1 uppercase">{{ m.time }}</span>
+              </div>
             </div>
           </div>
 
-          <!-- 입력 영역 -->
-          <div class="px-5 py-4 border-t" style="border-color: var(--border);">
-            <div class="flex items-end gap-3">
-              <button id="btnAttach" class="btn" type="button" title="첨부(데모)">
+          <div class="p-5 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
+              <button @click="quickReply('안녕하세요! 반갑습니다 👋')" class="btn-tag">👋 인사</button>
+              <button @click="quickReply('포트폴리오 내용에 대해 궁금한 점이 있어요.')" class="btn-tag">❓ 질문</button>
+              <button @click="quickReply('편하신 시간에 대화 가능할까요?')" class="btn-tag">📅 제안</button>
+              <button @click="quickReply('감사합니다!')" class="btn-tag">🙏 감사</button>
+            </div>
+
+            <div class="flex items-end gap-3 bg-slate-50 dark:bg-slate-800/50 p-2 rounded-2xl border border-slate-200 dark:border-slate-700/50 focus-within:border-amber-400 transition-all">
+              <button class="w-10 h-10 flex-shrink-0 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
                 <i class="fa-solid fa-paperclip"></i>
               </button>
-
-              <div class="flex-1">
-                <textarea id="messageInput" rows="1"
-                  class="ui-input resize-none"
-                  placeholder="메시지를 입력하세요 (Enter 전송 / Shift+Enter 줄바꿈)"></textarea>
-                <div class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-                  빠른 답장: <button class="underline font-bold" type="button" onclick="quick('안녕하세요! 포트폴리오 보고 연락드려요 🙂')">인사</button> ·
-                  <button class="underline font-bold" type="button" onclick="quick('혹시 프로젝트에서 맡으신 역할을 더 설명해주실 수 있을까요?')">질문</button> ·
-                  <button class="underline font-bold" type="button" onclick="quick('내일 오후에 10분 정도 통화 가능하실까요?')">일정</button>
-                </div>
-              </div>
-
-              <button id="sendBtn" class="btn-accent" type="button">
+              <textarea 
+                ref="textareaRef" v-model="messageInput" @input="autosize" @keydown="handleKeydown" rows="1"
+                class="flex-1 bg-transparent border-none focus:ring-0 text-sm py-2.5 resize-none max-h-32 dark:text-slate-200 outline-none"
+                placeholder="메시지를 입력하세요..."
+              ></textarea>
+              <button @click="sendMessage" class="w-10 h-10 flex-shrink-0 bg-amber-400 hover:bg-amber-500 rounded-xl flex items-center justify-center text-amber-950 transition-all active:scale-95 shadow-sm">
                 <i class="fa-solid fa-paper-plane"></i>
-                <span class="hidden sm:inline ml-2">전송</span>
               </button>
             </div>
           </div>
+        </template>
+
+        <div v-else class="flex-1 flex flex-col items-center justify-center text-slate-400 p-10 text-center">
+          <div class="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+            <i class="fa-solid fa-comments text-4xl opacity-20"></i>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">대화를 시작해보세요</h3>
+          <p class="text-sm max-w-xs leading-relaxed">상대방을 선택하여 새로운 프로젝트나 커리어나눔을 시작할 수 있습니다.</p>
         </div>
       </section>
-    </section>
-  </main>
-</div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-    .card{
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: var(--card);
-    }
-    .soft-shadow{ box-shadow:var(--shadow); }
+/* 3D Transform Utilities */
+.perspective-1000 { perspective: 1000px; }
+.transform-style-3d { transform-style: preserve-3d; }
+.backface-hidden { backface-visibility: hidden; }
+.rotate-y-180 { transform: rotateY(180deg); }
+.flipped { transform: rotateY(180deg); }
 
-    .ui-input{
-      width:100%;
-      background:var(--input);
-      color:var(--text);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:12px 16px;
-      outline:none;
-    }
-    .ui-input::placeholder{ color:var(--muted); }
-    .ui-input:focus{
-      box-shadow:0 0 0 3px rgba(250,204,21,.25);
-      border-color:rgba(250,204,21,.55);
-    }
+/* Custom Scrollbar */
+.thin-scroll::-webkit-scrollbar { width: 5px; }
+.thin-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+.dark .thin-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 
-    .btn{
-      border:1px solid var(--border);
-      background:transparent;
-      color:var(--text);
-      border-radius:16px;
-      padding:10px 14px;
-      font-weight:900;
-    }
-    .btn:hover{ background:var(--hover); }
-    .btn-accent{
-      border:1px solid rgba(250,204,21,.55);
-      background:var(--accent);
-      color:#111827;
-      border-radius:16px;
-      padding:10px 14px;
-      font-weight:900;
-    }
-    /* Message Wrap  */
-    .msg-wrap{
-      display: inline-flex;
-      flex-direction: column;
-      max-width: 560px;
-    }
-    .msg-wrap.me{ align-items: flex-end; }
-    .msg-wrap.them{ align-items: flex-start; }
-    
+/* Custom Component Styles */
+.btn-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+.btn-action { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.btn-action:hover { background: #f1f5f9; color: #0f172a; }
+.dark .btn-action:hover { background: #1e293b; color: #f8fafc; }
 
-    /* Scroll */
-    .thin-scroll::-webkit-scrollbar { width: 10px; }
-    .thin-scroll::-webkit-scrollbar-thumb {
-      background: rgba(161,161,170,.35);
-      border-radius: 999px;
-      border: 3px solid transparent;
-      background-clip: padding-box;
-    }
-    :deep(html.dark .thin-scroll::-webkit-scrollbar-thumb){ background: rgba(113,113,122,.55); }
+.btn-tag { white-space: nowrap; padding: 6px 14px; background: #f1f5f9; border-radius: 12px; font-size: 12px; font-weight: 700; color: #475569; transition: all 0.2s; border: 1px solid transparent; }
+.btn-tag:hover { background: #e2e8f0; border-color: #cbd5e1; color: #0f172a; }
+.dark .btn-tag { background: #1e293b; color: #94a3b8; }
+.dark .btn-tag:hover { background: #334155; color: #f8fafc; }
 
-    /* Room active */
-    .room[aria-selected="true"]{
-      border-color: rgba(250,204,21,.55) !important;
-      background: var(--accentSoft);
-    }
+/* Chat Bubbles */
+.bubble { padding: 12px 18px; font-size: 14px; line-height: 1.6; border-radius: 22px; position: relative; word-break: break-all; }
+.bubble-me { background: #fbbf24; color: #451a03; border-bottom-right-radius: 4px; font-weight: 500; box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2); }
+.bubble-them { background: white; color: #1e293b; border-bottom-left-radius: 4px; border: 1px solid #e2e8f0; }
+.dark .bubble-them { background: #1e293b; color: #f1f5f9; border-color: #334155; }
 
-    /* 작은 상태 점 */
-    .dot{ width:10px; height:10px; border-radius:999px; background:#22c55e; }
-    :deep(html.dark .dot){ filter: brightness(1.05); }
-</style>
+/* Transitions */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
-<!-- 동적으로 생성되는 요소를 위한 전역 스타일 -->
-<style>
-  /* Chat 컴포넌트의 동적 요소 스타일 (scoped 없음 - 전역 적용) */
-  /* 주의: 이 스타일은 애플리케이션 전체에 전역으로 적용됩니다! */
-  .chat-room[aria-selected="true"] {
-    border-color: rgba(250,204,21,.55) !important;
-    background: var(--accentSoft);
-  }
-  .chat-bubble {
-    display: inline-block;
-    border-radius: 22px;
-    max-width: 100%;
-    white-space: pre-wrap;       /* 줄바꿈은 사용자가 친 것만 */
-    word-break: keep-all;        /* 한글 자연스럽게 */
-    overflow-wrap: break-word;   /* 너무 길면 예외적으로 줄바꿈 */
-  }
-  .chat-bubble-me {
-    background: var(--me);
-    color: var(--meText);
-    border: 1px solid rgba(63,63,70,.25);
-  }
-  .chat-bubble-them {
-    background: var(--them);
-    color: var(--themText);
-    border: 1px solid var(--border);
-  }
+.card-pop-enter-active { transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.card-pop-enter-from { opacity: 0; transform: scale(0.8) translateY(30px); }
+
+/* 드롭다운 애니메이션 */
+.fade-in-enter-active { transition: all 0.2s ease-out; }
+.fade-in-leave-active { transition: all 0.15s ease-in; }
+.fade-in-enter-from { opacity: 0; transform: translateY(-10px) scale(0.95); }
+.fade-in-leave-to { opacity: 0; transform: translateY(-10px) scale(0.95); }
 </style>

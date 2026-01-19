@@ -162,3 +162,338 @@ html.namecard-open #flyout-namecard .nav-panel {
   transform: translateX(-50%);
   width: min(420px, calc(100vw - 32px));
 }
+
+/* =========================================================
+   ✅ 아래부터 이번 요청 “추가” (기존 톤/간격 유지)
+========================================================= */
+
+/* ✅ 로고 이미지 (헤더 높이 80px에 맞춰 40px 전후로 딱) */
+.pc-brand-logo-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(250, 204, 21, 0.10);
+  border: 1px solid rgba(250, 204, 21, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.pc-brand-logo-img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+/* ✅ 기업 페이지 버튼(테마 버튼 자리 대체) */
+.pc-company-btn {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(107, 114, 128, 1); /* gray-500 */
+  background: rgba(243, 244, 246, 1); /* gray-100 */
+  transition: 0.15s ease;
+}
+.dark .pc-company-btn {
+  background: rgba(39, 39, 42, 1); /* zinc-800 */
+  color: rgba(161, 161, 170, 1); /* zinc-400 */
+}
+.pc-company-btn:hover {
+  color: #facc15;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.15);
+}
+
+/* ✅ 닉네임 패널: 오른쪽 정렬 + 클릭으로만 보이게 */
+#flyout-user {
+  position: relative;
+}
+#flyout-user .pc-user-panel {
+  left: auto;
+  right: 0;
+  top: calc(100% + 10px);
+  transform: none;
+  width: 340px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 2000;
+}
+#flyout-user .pc-user-panel.pc-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ✅ 로그아웃 버튼(패널 우상단) */
+.pc-logout-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  color: rgba(17, 24, 39, 0.70);
+  background: rgba(17, 24, 39, 0.06);
+  transition: 0.15s ease;
+}
+.dark .pc-logout-btn {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.10);
+}
+.pc-logout-btn:hover {
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
+}
+
+/* ✅ 명함 카드(패널 안) */
+.pc-mini-card {
+  border-radius: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  background:
+    radial-gradient(900px 240px at 20% 0%, rgba(250, 204, 21, 0.18), transparent 60%),
+    radial-gradient(700px 220px at 80% 100%, rgba(59, 130, 246, 0.10), transparent 60%),
+    rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  padding: 14px;
+}
+.dark .pc-mini-card {
+  background:
+    radial-gradient(900px 240px at 20% 0%, rgba(250, 204, 21, 0.10), transparent 60%),
+    radial-gradient(700px 220px at 80% 100%, rgba(59, 130, 246, 0.10), transparent 60%),
+    rgba(24, 24, 27, 0.65);
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.pc-mini-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pc-mini-left {
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+  align-items: center;
+}
+.pc-mini-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.dark .pc-mini-avatar {
+  background: rgba(0, 0, 0, 0.18);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+.pc-mini-avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+.pc-mini-meta {
+  min-width: 0;
+}
+.pc-mini-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 900;
+  color: #111827;
+  line-height: 1.2;
+}
+.dark .pc-mini-name {
+  color: #fff;
+}
+.pc-mini-role {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.70);
+}
+.dark .pc-mini-role {
+  color: rgba(255, 255, 255, 0.75);
+}
+.pc-mini-company {
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.55);
+}
+.dark .pc-mini-company {
+  color: rgba(255, 255, 255, 0.60);
+}
+.pc-mini-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  background: rgba(250, 204, 21, 0.18);
+  border: 1px solid rgba(250, 204, 21, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-mini-divider {
+  height: 1px;
+  margin: 12px 0 10px;
+  background: linear-gradient(
+    to right,
+    rgba(250, 204, 21, 0.22),
+    rgba(0, 0, 0, 0.06),
+    rgba(59, 130, 246, 0.12)
+  );
+}
+.dark .pc-mini-divider {
+  background: linear-gradient(
+    to right,
+    rgba(250, 204, 21, 0.20),
+    rgba(255, 255, 255, 0.10),
+    rgba(59, 130, 246, 0.16)
+  );
+}
+
+.pc-mini-info {
+  display: grid;
+  gap: 8px;
+}
+.pc-mini-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pc-mini-label {
+  font-size: 10px;
+  font-weight: 900;
+  color: rgba(17, 24, 39, 0.55);
+}
+.dark .pc-mini-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+.pc-mini-value {
+  font-size: 10px;
+  font-weight: 900;
+  color: rgba(17, 24, 39, 0.85);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+.dark .pc-mini-value {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.pc-mini-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pc-mini-btn {
+  flex: 1;
+  padding: 10px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(250, 204, 21, 0.36);
+  background: rgba(250, 204, 21, 0.16);
+  font-weight: 900;
+  font-size: 11px;
+  color: #111827;
+  cursor: pointer;
+  transition: 0.15s ease;
+}
+.pc-mini-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
+}
+.pc-mini-btn.ghost {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.35);
+}
+.dark .pc-mini-btn {
+  color: #fff;
+  border-color: rgba(250, 204, 21, 0.28);
+  background: rgba(250, 204, 21, 0.10);
+}
+.dark .pc-mini-btn.ghost {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ✅ 로그아웃 확인 모달(패널 내부) */
+.pc-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.30);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+.pc-confirm {
+  width: 100%;
+  max-width: 280px;
+  border-radius: 18px;
+  border: 1px solid rgba(250, 204, 21, 0.22);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.20);
+  padding: 14px;
+}
+.dark .pc-confirm {
+  background: rgba(24, 24, 27, 0.95);
+  border-color: rgba(250, 204, 21, 0.20);
+}
+.pc-confirm-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  color: #111827;
+}
+.dark .pc-confirm-title {
+  color: #fff;
+}
+.pc-confirm-desc {
+  margin: 6px 0 12px;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(17, 24, 39, 0.65);
+}
+.dark .pc-confirm-desc {
+  color: rgba(255, 255, 255, 0.70);
+}
+.pc-confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+.pc-confirm-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(250, 204, 21, 0.36);
+  background: rgba(250, 204, 21, 0.18);
+  font-weight: 900;
+  font-size: 11px;
+  color: #111827;
+  cursor: pointer;
+}
+.pc-confirm-btn.ghost {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.55);
+}
+.dark .pc-confirm-btn {
+  color: #fff;
+  border-color: rgba(250, 204, 21, 0.28);
+  background: rgba(250, 204, 21, 0.10);
+}
+.dark .pc-confirm-btn.ghost {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
