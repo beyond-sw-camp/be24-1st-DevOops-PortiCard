@@ -1,0 +1,847 @@
+<!-- src/views/VideoChat.vue -->
+<template>
+  <div class="page">
+    <video ref="remoteVideoRef" id="remoteVideo" autoplay playsinline></video>
+
+    <div
+      id="sharePreviewContainer"
+      :style="{ display: sharePreviewVisible ? 'block' : 'none' }"
+      :class="{ 'full-size': sharePreviewFullSize }"
+      @click="toggleShareSize"
+    >
+      <video ref="sharePreviewVideoRef" id="sharePreviewVideo" autoplay playsinline muted></video>
+    </div>
+
+    <div class="local-video-container" id="localContainer" :class="{ enlarged: localEnlarged }">
+      <video ref="localVideoRef" class="local-video" id="localVideo" autoplay muted playsinline></video>
+      <button
+        type="button"
+        class="absolute top-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-md rounded-xl text-white"
+        @click="toggleEnlarge"
+      >
+        <i class="fa-solid fa-maximize"></i>
+      </button>
+    </div>
+
+    <aside class="side-panel" id="sidePanel" :class="{ collapsed: sideCollapsed }">
+      <div class="p-6">
+        <div class="flex items-center gap-4 mb-6 text-left">
+          <div class="w-12 h-12 bg-zinc-800 rounded-2xl overflow-hidden">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
+          </div>
+          <div>
+            <h2 class="font-black text-lg">Kim Poti</h2>
+            <p class="text-[10px] text-yellow-400 font-bold uppercase">Live Session</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 gap-2">
+          <button
+            type="button"
+            @click="openModal('cardModal')"
+            class="w-full py-3 bg-white/5 rounded-xl text-sm font-bold border border-white/10"
+          >
+            명함 상세보기
+          </button>
+          <button
+            type="button"
+            @click="openModal('authModal')"
+            class="w-full py-3 bg-yellow-400 text-black rounded-xl text-sm font-black"
+          >
+            권한 관리
+          </button>
+        </div>
+      </div>
+
+      <button type="button" class="toggle-trigger" @click="toggleSidePanel">
+        <i id="toggleIcon" :class="sideCollapsed ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-up'"></i>
+      </button>
+    </aside>
+
+    <nav class="controls">
+      <button
+        id="micBtn"
+        type="button"
+        class="control-btn"
+        :class="{ on: micOn }"
+        @click="toggleStatus('mic')"
+      >
+        <i :class="micOn ? 'fa-solid fa-microphone' : 'fa-solid fa-microphone-slash'"></i>
+        <span class="status-label">{{ micOn ? "ON" : "OFF" }}</span>
+      </button>
+
+      <button
+        id="camBtn"
+        type="button"
+        class="control-btn"
+        :class="{ on: camOn }"
+        @click="toggleStatus('cam')"
+      >
+        <i :class="camOn ? 'fa-solid fa-video' : 'fa-solid fa-video-slash'"></i>
+        <span class="status-label">{{ camOn ? "ON" : "OFF" }}</span>
+      </button>
+
+      <button
+        id="shareBtn"
+        type="button"
+        class="control-btn"
+        :class="{ on: screenStream !== null }"
+        @click="handleShareClick"
+      >
+        <i class="fa-solid fa-desktop"></i><span class="status-label">SHARE</span>
+      </button>
+
+      <button id="setBtn" type="button" class="control-btn" @click="openModal('settingsModal')">
+        <i class="fa-solid fa-gear"></i><span class="status-label">SETTING</span>
+      </button>
+
+      <button
+        id="callBtn"
+        type="button"
+        class="control-btn"
+        @click="makeCall"
+        :disabled="callDisabled"
+      >
+        <i class="fa-solid fa-phone"></i><span class="status-label">CALL</span>
+      </button>
+
+      <div class="w-px h-10 bg-white/10 mx-1"></div>
+
+      <button
+        type="button"
+        class="control-btn"
+        style="background:#ef4444; color:white; border:none;"
+        @click="goExit"
+      >
+        <i class="fa-solid fa-phone-slash"></i><span class="status-label">EXIT</span>
+      </button>
+    </nav>
+
+    <!-- Settings Modal -->
+    <div
+      id="settingsModal"
+      class="modal"
+      :class="{ open: modals.settingsModal }"
+      @click="onBackdropClick('settingsModal', $event)"
+    >
+      <div class="bg-zinc-900 border border-white/10 rounded-[32px] p-8 w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-black flex items-center gap-2">
+            <i class="fa-solid fa-gear text-yellow-400"></i> 환경설정
+          </h3>
+          <button type="button" @click="closeModal('settingsModal')" class="text-zinc-500 hover:text-white">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="space-y-4 text-left">
+          <div>
+            <label class="text-[10px] font-bold text-zinc-500 mb-2 block uppercase">Camera Source</label>
+            <select class="w-full bg-zinc-800 p-3 rounded-xl text-sm border-none">
+              <option>Default</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold text-zinc-500 mb-2 block uppercase">Audio Source</label>
+            <select class="w-full bg-zinc-800 p-3 rounded-xl text-sm border-none">
+              <option>Default</option>
+            </select>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="closeModal('settingsModal')"
+          class="w-full mt-8 py-4 bg-yellow-400 text-black rounded-2xl font-black"
+        >
+          설정 저장
+        </button>
+      </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div
+      id="shareModal"
+      class="modal"
+      :class="{ open: modals.shareModal }"
+      @click="onBackdropClick('shareModal', $event)"
+    >
+      <div class="bg-zinc-900 border border-white/10 rounded-[32px] p-8 w-full max-w-md text-center relative">
+        <button
+          type="button"
+          @click="closeModal('shareModal')"
+          class="absolute top-6 right-6 text-zinc-500 hover:text-white"
+        >
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+        <div
+          class="w-16 h-16 bg-yellow-400/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-yellow-400 text-2xl"
+        >
+          <i class="fa-solid fa-desktop"></i>
+        </div>
+        <h3 class="text-xl font-black mb-2">화면 공유 시작</h3>
+        <p class="text-sm text-zinc-500 mb-8 leading-relaxed">
+          공유할 브라우저 탭이나 프레젠테이션<br />파일을 선택해 주세요.
+        </p>
+        <button
+          type="button"
+          @click="startScreenShare"
+          class="w-full py-4 bg-yellow-400 text-black rounded-2xl font-black"
+        >
+          공유 할 탭 선택하기
+        </button>
+      </div>
+    </div>
+
+    <!-- Card Modal -->
+    <div
+      id="cardModal"
+      class="modal"
+      :class="{ open: modals.cardModal }"
+      @click="onBackdropClick('cardModal', $event)"
+    >
+      <div class="relative w-full max-w-md aspect-[1.58/1] perspective-1000">
+        <div
+          id="card-inner"
+          class="relative w-full h-full transform-style-3d shadow-2xl rounded-2xl cursor-pointer"
+          :class="{ flipped: cardFlipped }"
+          @click="flipCard"
+        >
+          <div
+            class="absolute inset-0 w-full h-full bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 p-8 backface-hidden overflow-hidden"
+          >
+            <div class="absolute top-0 right-0 w-32 h-32 bg-yellow-400/20 rounded-bl-full"></div>
+            <div class="flex flex-col justify-between h-full relative z-10 text-left text-gray-900 dark:text-white">
+              <div class="flex justify-between items-start">
+                <div>
+                  <p class="text-xs font-bold text-yellow-500 uppercase mb-1">UX/UI Designer</p>
+                  <h2 class="text-3xl font-black mb-2">Kim Poti</h2>
+                  <p class="text-sm opacity-60">사용자 경험을 디자인하는<br />디자이너 김포티입니다.</p>
+                </div>
+                <div class="w-20 h-20 rounded-full border-4 border-white dark:border-zinc-800 overflow-hidden">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full" alt="avatar" />
+                </div>
+              </div>
+              <div class="pt-4 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center">
+                <div class="flex gap-2">
+                  <span class="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold rounded">#Figma</span>
+                </div>
+                <i class="fa-solid fa-qrcode text-3xl opacity-80"></i>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="absolute inset-0 w-full h-full bg-zinc-900 dark:bg-white rounded-2xl border border-zinc-800 dark:border-gray-200 p-8 backface-hidden rotate-y-180 text-white dark:text-gray-900"
+          >
+            <div class="flex flex-col h-full relative z-10 text-left">
+              <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                <span class="w-1.5 h-6 bg-yellow-400 rounded-full"></span> Contact Info
+              </h3>
+              <div class="space-y-4 flex-1 text-sm">
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-phone text-yellow-500"></i><span>010-1234-5678</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <i class="fa-solid fa-link text-yellow-500"></i><span>kimpoti.design</span>
+                </div>
+              </div>
+              <div class="text-right opacity-40 text-[10px] font-bold uppercase">Poticard</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div
+      id="authModal"
+      class="modal"
+      :class="{ open: modals.authModal }"
+      @click="onBackdropClick('authModal', $event)"
+    >
+      <div class="bg-zinc-900 border border-white/10 rounded-[40px] p-10 w-full max-w-5xl shadow-3xl">
+        <div class="flex justify-between items-end mb-8 text-left">
+          <div>
+            <h3 class="text-3xl font-black mb-2">포트폴리오 권한 관리</h3>
+            <p id="selectionCount" class="text-yellow-400 text-sm font-bold">{{ selectionCountText }}</p>
+          </div>
+        </div>
+
+        <div class="portfolio-scroll thin-scroll" id="portfolioList" @wheel.prevent="onPortfolioWheel">
+          <div
+            v-for="p in portfolios"
+            :key="p.id"
+            class="portfolio-item text-left"
+            :class="{ selected: selectedIds.has(p.id) }"
+            @click="togglePortfolio(p.id)"
+          >
+            <h4 class="font-black text-xl mb-3">{{ p.title }}</h4>
+            <p class="text-[13px] text-zinc-400 leading-relaxed h-20 overflow-hidden">{{ p.desc }}</p>
+            <div class="flex gap-2 mt-4">
+              <span
+                v-for="t in p.tags"
+                :key="t"
+                class="px-2 py-1 bg-black/40 text-[10px] font-bold rounded"
+              >#{{ t }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-10">
+          <button type="button" @click="closeModal('authModal')" class="flex-1 py-5 bg-zinc-800 rounded-2xl font-bold text-zinc-400">
+            취소
+          </button>
+          <button type="button" @click="confirmAuth" class="flex-1 py-5 bg-yellow-400 text-black rounded-2xl font-black">
+            권한 부여하기
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Debug log -->
+    <div id="log">{{ logText }}</div>
+  </div>
+</template>
+
+<script setup>
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
+
+/** refs */
+const remoteVideoRef = ref(null);
+const localVideoRef = ref(null);
+const sharePreviewVideoRef = ref(null);
+
+/** router */
+const router = useRouter();
+
+/** UI state */
+const micOn = ref(true);
+const camOn = ref(true);
+const sideCollapsed = ref(false);
+const localEnlarged = ref(false);
+const cardFlipped = ref(false);
+
+const sharePreviewVisible = ref(false);
+const sharePreviewFullSize = ref(false);
+
+const modals = ref({
+  settingsModal: false,
+  shareModal: false,
+  cardModal: false,
+  authModal: false,
+});
+
+const portfolios = ref([
+  { id: 1, title: "Fintech App 2.0", desc: "사용자 100만 명을 위한 결제 모듈 최적화 및 접근성 개선 프로젝트입니다.", tags: ["Mobile", "Fintech"] },
+  { id: 2, title: "Design System", desc: "아토믹 디자인 기반의 전사 시스템 구축입니다. 50개 이상의 컴포넌트 표준화.", tags: ["Figma", "Atomic"] },
+  { id: 3, title: "Poticard Service", desc: "개인 브랜딩과 명함 공유를 결합한 새로운 소셜 플랫폼입니다.", tags: ["Web", "React"] },
+]);
+const selectedIds = ref(new Set());
+
+const selectionCountText = computed(() => `${selectedIds.value.size}개의 프로젝트가 선택되었습니다.`);
+
+/** debug log */
+const logText = ref("");
+function log(m) {
+  console.log(m);
+  logText.value = (logText.value + `\n> ${m}`).trim();
+}
+
+/** WebRTC */
+const localStream = ref(null);
+const screenStream = ref(null);
+
+const ws = ref(null);
+const pc = ref(null);
+
+const wsOpen = ref(false);
+
+// google STUN서버
+const rtcConfig = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+
+const callDisabled = computed(() => !localStream.value || !wsOpen.value);
+
+
+function initWebSocket() {
+  if (ws.value && (ws.value.readyState === WebSocket.OPEN || ws.value.readyState === WebSocket.CONNECTING)) return;
+
+  const scheme = location.protocol === "https:" ? "wss" : "ws";
+  const wsUrl = `${scheme}://${location.host}/ws`;
+
+  ws.value = new WebSocket(wsUrl);
+
+  ws.value.onopen = () => {
+    wsOpen.value = true;
+    log(`WS connected: ${wsUrl}`);
+  };
+  ws.value.onerror = () => log("WS error");
+  ws.value.onclose = () => {
+    wsOpen.value = false;
+    log("WS closed");
+  };
+
+  ws.value.onmessage = async (e) => {
+    const msg = JSON.parse(e.data);
+    try {
+      if (msg.type === "offer") await handleOffer(msg.offer);
+      if (msg.type === "answer") await handleAnswer(msg.answer);
+      if (msg.type === "candidate") await handleCandidate(msg.candidate);
+    } catch (err) {
+      console.error(err);
+      log(`Signal handle error: ${err?.message || err}`);
+    }
+  };
+}
+
+
+function createPeerConnectionIfNeeded() {
+  if (pc.value) return;
+
+  pc.value = new RTCPeerConnection(rtcConfig);
+
+  // 로컬 트랙 추가
+  localStream.value.getTracks().forEach((track) => pc.value.addTrack(track, localStream.value));
+
+  // 상대방 트랙 수신
+  pc.value.ontrack = (e) => {
+    const [remoteStream] = e.streams;
+    if (remoteVideoRef.value) remoteVideoRef.value.srcObject = remoteStream;
+    log("Remote stream received");
+  };
+
+  // ICE 후보 전달
+  pc.value.onicecandidate = (e) => {
+    if (e.candidate && ws.value?.readyState === WebSocket.OPEN) {
+      ws.value.send(JSON.stringify({ type: "candidate", candidate: e.candidate }));
+    }
+  };
+
+  pc.value.onconnectionstatechange = () => log(`PC state: ${pc.value.connectionState}`);
+}
+
+
+async function makeCall() {
+  if (!localStream.value) {
+    alert("카메라/마이크 권한이 먼저 필요해요.");
+    return;
+  }
+  initWebSocket();
+  createPeerConnectionIfNeeded();
+
+  const offer = await pc.value.createOffer();
+  await pc.value.setLocalDescription(offer);
+
+  ws.value.send(JSON.stringify({ type: "offer", offer }));
+  log("Offer sent");
+}
+
+
+async function handleOffer(offer) {
+  if (!localStream.value) {
+    await startLocalMedia();
+  }
+
+  initWebSocket();
+  createPeerConnectionIfNeeded();
+
+  await pc.value.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.value.createAnswer();
+  await pc.value.setLocalDescription(answer);
+
+  ws.value.send(JSON.stringify({ type: "answer", answer }));
+  log("Offer received → Answer sent");
+}
+
+async function handleAnswer(answer) {
+  await pc.value.setRemoteDescription(new RTCSessionDescription(answer));
+  log("Answer received → Connected");
+}
+
+async function handleCandidate(candidate) {
+  if (!pc.value) return;
+  await pc.value.addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+async function startLocalMedia() {
+  localStream.value = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  if (localVideoRef.value) localVideoRef.value.srcObject = localStream.value;
+  log("Local media ready");
+
+  const at = localStream.value.getAudioTracks()[0];
+  const vt = localStream.value.getVideoTracks()[0];
+  if (at) at.enabled = micOn.value;
+  if (vt) vt.enabled = camOn.value;
+}
+
+
+async function startScreenShare() {
+  try {
+    screenStream.value = await navigator.mediaDevices.getDisplayMedia({ video: true });
+if (sharePreviewVideoRef.value) sharePreviewVideoRef.value.srcObject = screenStream.value;
+sharePreviewVisible.value = true;
+
+if (pc.value) {
+  const sender = pc.value.getSenders().find((s) => s.track && s.track.kind === "video");
+  const newTrack = screenStream.value.getVideoTracks()[0];
+  if (sender && newTrack) await sender.replaceTrack(newTrack);
+}
+screenStream.value.getVideoTracks()[0].onended = () => stopScreenShare();
+  } catch (err) {
+    console.error(err);
+    log(`Screen share error: ${err?.message || err}`);
+  }
+}
+
+async function stopScreenShare() {
+  if (screenStream.value) {
+  screenStream.value.getTracks().forEach((t) => t.stop());
+  screenStream.value = null;
+}
+sharePreviewVisible.value = false;
+sharePreviewFullSize.value = false;
+
+if (pc.value && localStream.value) {
+  const sender = pc.value.getSenders().find((s) => s.track && s.track.kind === "video");
+  const camTrack = localStream.value.getVideoTracks()[0];
+  if (sender && camTrack) await sender.replaceTrack(camTrack);
+}
+}
+
+/** UI handlers (same behavior) */
+function toggleStatus(type) {
+  if (type === "mic") {
+    micOn.value = !micOn.value;
+    const t = localStream.value?.getAudioTracks?.()[0];
+    if (t) t.enabled = micOn.value;
+  } else {
+    camOn.value = !camOn.value;
+    const t = localStream.value?.getVideoTracks?.()[0];
+    if (t) t.enabled = camOn.value;
+  }
+}
+
+function handleShareClick() {
+  if (screenStream) stopScreenShare();
+  else openModal("shareModal");
+}
+
+function toggleShareSize() {
+  if (sharePreviewVisible.value) sharePreviewFullSize.value = !sharePreviewFullSize.value;
+}
+
+function openModal(id) {
+  modals.value[id] = true;
+}
+
+function closeModal(id) {
+  modals.value[id] = false;
+}
+
+function onBackdropClick(id, e) {
+  if (e.target?.id === id) closeModal(id);
+}
+
+function toggleSidePanel() {
+  sideCollapsed.value = !sideCollapsed.value;
+}
+
+function flipCard() {
+  cardFlipped.value = !cardFlipped.value;
+}
+
+function toggleEnlarge() {
+  localEnlarged.value = !localEnlarged.value;
+}
+
+function togglePortfolio(id) {
+  const s = new Set(selectedIds.value);
+  if (s.has(id)) s.delete(id);
+  else s.add(id);
+  selectedIds.value = s;
+}
+
+function onPortfolioWheel(e) {
+  // 기존: this.scrollLeft += event.deltaY
+  const el = e.currentTarget;
+  if (el) el.scrollLeft += e.deltaY;
+}
+
+function confirmAuth() {
+  alert("부여되었습니다.");
+  closeModal("authModal");
+}
+
+function goExit() {
+  // 기존 index.html로 이동
+  // SPA면 라우터로 바꿔도 됨: router.push('/')
+  window.location.href = "index.html";
+}
+
+/** lifecycle */
+onMounted(async () => {
+  // html class="dark" 유지하고 싶으면 아래 유지
+  document.documentElement.classList.add("dark");
+
+  initWebSocket();
+  try {
+    await startLocalMedia();
+  } catch (e) {
+    console.error(e);
+    alert("카메라/마이크 권한을 허용해주세요.");
+  }
+});
+
+onBeforeUnmount(() => {
+  try {
+    if (ws) ws.close();
+  } catch {}
+  try {
+    if (pc) pc.close();
+  } catch {}
+
+  try {
+    if (screenStream) screenStream.getTracks().forEach((t) => t.stop());
+  } catch {}
+  try {
+    if (localStream) localStream.getTracks().forEach((t) => t.stop());
+  } catch {}
+
+  ws = null;
+  pc = null;
+  localStream = null;
+  screenStream = null;
+});
+</script>
+
+<style scoped>
+:root {
+  --bg: #000000;
+  --card: #121214;
+  --text: #fafafa;
+  --accent: #facc15;
+  --danger: #ef4444;
+  --border: rgba(255, 255, 255, 0.08);
+}
+.page {
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  font-family: "Noto Sans KR", sans-serif;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#remoteVideo {
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  background-color: #000000;
+}
+
+#sharePreviewContainer {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 200px;
+  aspect-ratio: 16/9;
+  border-radius: 12px;
+  border: 2px solid var(--accent);
+  background: #000;
+  z-index: 200;
+  display: none;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+#sharePreviewContainer.full-size {
+  width: calc(100vw - 48px);
+  height: calc(100vh - 120px);
+  top: 24px;
+  right: 24px;
+  z-index: 250;
+}
+#sharePreviewVideo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.local-video-container {
+  position: fixed;
+  bottom: 20px;
+  right: 24px;
+  width: 240px;
+  z-index: 100;
+  transition: width 0.3s ease;
+}
+.local-video-container.enlarged {
+  width: 440px;
+}
+.local-video {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 16px;
+  border: 2px solid var(--accent);
+  object-fit: cover;
+  background: #000;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+}
+
+.side-panel {
+  position: fixed;
+  top: 0;
+  left: 24px;
+  width: 320px;
+  background: rgba(18, 18, 20, 0.9);
+  backdrop-blur: 20px;
+  border-radius: 0 0 20px 20px;
+  border: 1px solid var(--border);
+  border-top: none;
+  transition: transform 0.4s ease;
+  z-index: 50;
+}
+.side-panel.collapsed {
+  transform: translateY(-100%);
+}
+.toggle-trigger {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 54px;
+  height: 32px;
+  background: rgba(18, 18, 20, 0.9);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.controls {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-blur: 20px;
+  padding: 14px 24px;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  z-index: 150;
+}
+.control-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #71717a;
+  border: 1px solid var(--border);
+}
+.control-btn.on {
+  background: var(--accent);
+  color: #000;
+  border: none;
+}
+.control-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.status-label {
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+}
+.modal.open {
+  display: flex;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+.flipped {
+  transform: rotateY(180deg);
+}
+
+.portfolio-scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) transparent;
+}
+.portfolio-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+.portfolio-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+.portfolio-scroll::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 10px;
+}
+.portfolio-item {
+  flex: 0 0 320px;
+  background: #1c1c1f;
+  border-radius: 24px;
+  border: 3px solid transparent;
+  padding: 28px;
+  cursor: pointer;
+}
+.portfolio-item.selected {
+  border-color: var(--accent);
+  background: rgba(250, 204, 21, 0.05);
+}
+
+/* 디버그 로그 (필요없으면 display:none) */
+#log {
+  position: none;
+  top: 16px;
+  left: 16px;
+  z-index: 999;
+  font-size: 11px;
+  color: #9ca3af;
+  white-space: pre-line;
+  pointer-events: none;
+}
+</style>

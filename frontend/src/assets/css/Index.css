@@ -1,0 +1,384 @@
+.bg-pastel-yellow {
+  background-color: #fef9c3;
+}
+.text-point-yellow {
+  color: #facc15;
+}
+.border-point-yellow {
+  border-color: #facc15;
+}
+.ring-point-yellow {
+  --tw-ring-color: #facc15;
+}
+
+/* ✅ 헤더 네비 호버 서브메뉴 */
+.nav-item {
+  position: relative;
+}
+.nav-panel {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  transform: translateX(-50%);
+  width: 320px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    visibility 0.15s ease;
+}
+.nav-item:hover .nav-panel {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-item::after {
+  content: '';
+  position: absolute;
+  left: -12px;
+  right: -12px;
+  top: 100%;
+  height: 20px; /* ✅ 14px보다 크게 (안 끊기게) */
+  background: transparent;
+}
+
+/* ✅ (추가) submenu 자체 hover 중에도 유지 (안전망) */
+.nav-item:hover .nav-panel,
+.nav-item:hover::after {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ✅ (수정) 명함은 hover가 아니라 클릭으로도 카드처럼 뜨게 */
+html.namecard-open #flyout-namecard .nav-panel {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translateX(-50%) translateY(0) !important;
+}
+
+/* ✅ "명함 옆 이모지"로 전체 메뉴(4개 패널) 펼치기: 겹치지 않게 */
+.menu-open #mainNav {
+  display: grid !important;
+  position: fixed;
+  top: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1120px, calc(100vw - 32px));
+  padding: 16px;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+
+  border: 1px solid #f3f4f6;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+}
+.dark.menu-open #mainNav {
+  border-color: #27272a;
+  background: rgba(24, 24, 27, 0.92);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+
+.menu-open #mainNav .nav-item {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.menu-open #mainNav .nav-panel {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  width: 100%;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: none;
+}
+
+.menu-open #mainNav .nav-item .nav-title a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  color: #111827;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  width: fit-content;
+}
+.dark.menu-open #mainNav .nav-item .nav-title a {
+  color: #fff;
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.25);
+}
+
+@media (max-width: 1024px) {
+  .menu-open #mainNav {
+    grid-template-columns: 1fr;
+    top: 76px;
+  }
+}
+@media (min-width: 640px) and (max-width: 1024px) {
+  .menu-open #mainNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ✅ 이모지(전체메뉴 버튼)에는 hover로 패널이 뜨면 안됨 */
+#menuBtn:hover + a + .nav-panel,
+#menuBtn:hover ~ .nav-panel {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: translateX(-50%) !important;
+}
+
+/* ✅ 로그인/회원가입 팝업 */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+  z-index: 10000;
+}
+.modal-open .modal-backdrop {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.modal-card {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 32px));
+}
+
+/* ✅ 카드 hover 미리보기(가로) */
+.card-preview {
+  position: fixed;
+  left: 50%;
+  top: 96px;
+  transform: translateX(-50%) translateY(6px);
+  width: min(920px, calc(100vw - 32px));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s ease;
+  z-index: 9000;
+}
+.card-preview.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+/* ✅ 카드 상세 팝업 */
+.cardModal-open .card-modal {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.card-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+  z-index: 10050;
+}
+.card-modal .inner {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  transform: translateX(-50%);
+  width: min(820px, calc(100vw - 32px));
+}
+
+/* ==========================================================
+       ✅ (핵심) "촤라락" 카드 덱(겹침) 슬라이더
+       ========================================================== */
+.deck-wrap {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 8px 0 0;
+}
+
+/* 덱 배경: 살짝 카드 자리감 */
+.deck-surface {
+  width: min(720px, 100%);
+  height: clamp(420px, 52vw, 520px);
+  border-radius: 32px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+.dark .deck-surface {
+  background: rgba(24, 24, 27, 0.35);
+  border-color: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+}
+
+/* 카드 스택 영역 */
+.card-deck {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  perspective: 1400px;
+  touch-action: pan-y; /* 모바일 스와이프 */
+}
+
+.deck-card {
+  position: absolute;
+  width: clamp(220px, 26vw, 260px);
+  height: clamp(340px, 38vw, 392px);
+  border-radius: 20px;
+  transform-origin: 50% 120%;
+  transition:
+    transform 520ms cubic-bezier(0.2, 0.9, 0.18, 1),
+    opacity 240ms ease,
+    filter 420ms ease;
+  will-change: transform;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 촤라락 느낌: 이동 순간 살짝 "쓸림" */
+.deck-anim-left .deck-card {
+  transition-timing-function: cubic-bezier(0.12, 0.95, 0.12, 1);
+}
+.deck-anim-right .deck-card {
+  transition-timing-function: cubic-bezier(0.12, 0.95, 0.12, 1);
+}
+
+/* 흐릿하게 뒤로 */
+.deck-card.is-far {
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(1px);
+}
+.deck-card.is-back {
+  filter: saturate(0.95) contrast(0.98);
+  opacity: 0.92;
+}
+.deck-card.is-front {
+  opacity: 1;
+  filter: none;
+  pointer-events: auto;
+}
+
+/* 화살표 버튼 */
+.deck-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+  z-index: 9999;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+.dark .deck-arrow {
+  background: rgba(24, 24, 27, 0.75);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.3);
+}
+.deck-arrow:hover {
+  transform: translateY(-50%) scale(1.06);
+}
+.deck-arrow:active {
+  transform: translateY(-50%) scale(0.98);
+}
+.deck-arrow.left {
+  left: 18px;
+}
+.deck-arrow.right {
+  right: 18px;
+}
+
+/* 덱 하단 도트(현재 카드 표시) */
+.deck-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 60;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
+}
+.dark .deck-dots {
+  background: rgba(24, 24, 27, 0.55);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.2);
+}
+.dark .dot {
+  background: rgba(255, 255, 255, 0.22);
+}
+.dot.active {
+  background: rgba(250, 204, 21, 0.95);
+}
+
+/* 반응형: 모바일에서는 카드 간격/회전 줄이기 */
+@media (max-width: 640px) {
+  .deck-arrow.left {
+    left: 10px;
+  }
+  .deck-arrow.right {
+    right: 10px;
+  }
+  .deck-surface {
+    height: clamp(420px, 86vw, 520px);
+    border-radius: 26px;
+  }
+}
